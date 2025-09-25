@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Image } from 'react-na
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
+
 export default function Home({ navigation }) {
 
   const handleLogOut = async () => {
