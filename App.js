@@ -35,8 +35,6 @@ const [fontsLoaded, setFontsLoaded] = useState(false);
     loadFonts();
   }, []);
 
-
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -48,13 +46,10 @@ const [fontsLoaded, setFontsLoaded] = useState(false);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isAuthenticated ? 'SplashScreen' : 'Login'}>
+      <Stack.Navigator initialRouteName={isAuthenticated ? 'Home' : 'Login'}>
         {isAuthenticated ? (
           <>
             <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="ClientList" component={ClientList} />
-            <Stack.Screen name="ClientDetailScreen" component={ClientDetailScreen} />
-            <Stack.Screen name="CreateClientScreen" component={CreateClientScreen} />
           </>
         ) : (
           <>

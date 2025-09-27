@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
-import { ImageBackground } from 'react-native'
+
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+
   const handleLogin = async () => {
-    if (!email || !password)//Si los campos están vacíos muestra un error// 
-    {
+    if (!email || !password) {
       Alert.alert("Error", "Por favor ingrese ambos campos.");
       return;
     }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("Usuario logueado:", user);
+      Alert.alert("Login exitoso", "Has iniciado sesión correctamente.", 
+         navigation.reset({ index: 0, routes: [{ name: 'Home' }] }));
+
     } catch (error) {
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
@@ -39,11 +43,17 @@ export default function Login({ navigation }) {
     }
   };
 
+
   return (
     
     <View style={styles.container}>
-      <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
-     
+      <View style={styles.imageContainer}>
+
+        <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
+
+      </View>
+      
+  
       
       <Text style={styles.title}>Iniciar sesión</Text>
 
@@ -55,7 +65,7 @@ export default function Login({ navigation }) {
           style={styles.input}
           placeholder="Ingrese su correo"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => setEmail(text)}
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -69,7 +79,7 @@ export default function Login({ navigation }) {
           placeholder="Ingrese su contraseña"
           placeholderTextColor="#aaa"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => setPassword (text)}
           secureTextEntry={!showPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -93,9 +103,16 @@ export default function Login({ navigation }) {
       {/* logo*/}
       <Text style={styles.logo}>Romina Magallanez</Text>
       <View style={styles.logoText}>
-        <View style={styles.line} > ――― </View>
-        <View style={styles.TextM}>MI TIEMPO</View>
-        <View style={styles.line}> ――― </View> 
+        <View style={styles.line} >
+          <Text> ――― </Text>
+        </View> 
+        <View style={styles.TextM}>
+          <Text> MI TIEMPO</Text>
+        </View> 
+        <View style={styles.line}>
+          <Text> ――― </Text>
+          
+        </View> 
       </View>
       
       <View style={styles.signUpContainer}>
@@ -117,22 +134,27 @@ const styles = StyleSheet.create({
     padding: 55,
     backgroundColor: '#1f1f1f',
   },
- 
- 
+ imageContainer: {
+    flex: 1,
+    borderBottomRightRadius: 60, // BorderRadius específico para la esquina derecha
+    overflow: 'hidden', // Esto es crucial para que el borderRadius funcione
+    position: 'absolute',
+    top: 0,
+ },
   fondo: {
     width: 411,
     height: 258,
-    position: 'absolute',
-    top: 0,
-    borderightRadius:30,
+    
   },
   title: {
     fontSize: 48,
     fontWeight: 'bold',
-    padding: 50,
-    flex: 11,
-    position:'absolute',
-    marginBottom: 510,
+    padding: 0,
+    flex: 1,
+    position:'relative',
+    top: 60,
+    zIndex: 0,
+  
   },
 
   label: {
@@ -144,10 +166,9 @@ const styles = StyleSheet.create({
   formBox:{
     position:'absolute',
     flex: 2,
-    backgroundColor: '#928e8eff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    borderRadius: 30,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderRadius: 20,
     padding:5,
     width: 365,
     height: 350,
@@ -161,6 +182,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff5b5b',
     marginBottom: 20,
     width: '100%',
+   
   },
   icon: {
     marginRight: 10,
@@ -178,8 +200,8 @@ const styles = StyleSheet.create({
   },
   remember:{
     flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    alignItems: 'left',
+    paddingLeft: 5,
   },
   rememberText:{
     color: "#fdfdfdff",
@@ -191,14 +213,15 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontSize: 12,
     textAlign: 'right',
+
   },
   button: {
     backgroundColor: '#ff5b5b',
     paddingVertical: 12,
-    borderRadius: 5,
+    borderRadius: 20,
     alignItems: 'center',
-    marginTop: 10,
-    
+    marginTop: 0,
+    bottom: -15,
   },
   buttonText: {
     color: '#fff',
@@ -206,20 +229,21 @@ const styles = StyleSheet.create({
     fontWeight: 'regular',
   },
   logo:{
-    position:'absolute',
-    marginBottom: -610,
+    position:'relative',
+    bottom: 50,
     fontSize: 32,
     fontWeight:'regular',
     fontFamily: 'GreatVibes',
-    padding: 37,
+    marginTop:10,
   },
   logoText:{
-    position:'absolute',
-    marginBottom: -710,
+    position:'relative',
+    bottom: 50,
+    marginBottom: 10,
     flexDirection:'row',
     alignItems: 'center',
     justifyContent:'center',
-    marginTop: -38,
+
     fontFamily:"Sansationlight"
   },
   line:{
@@ -233,8 +257,8 @@ const styles = StyleSheet.create({
     fontWeight:'light',
   },
   signUpContainer: {
-    position: 'absolute',
-    bottom: 30,
+    position: 'relative',
+    bottom: 20,
     alignSelf: 'center',
   },
   signUpText: {
