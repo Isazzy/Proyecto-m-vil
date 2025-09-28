@@ -9,13 +9,9 @@ import * as Font from "expo-font";
 // Screens de autenticación
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
-import SplashScreen from './screens/SplashScreen';
 
 // Screens de clientes
 import Home from './screens/Home';
-import ClientList from './screens/ClientList';
-import ClientDetailScreen from './screens/ClientDetailScreen';
-import CreateClientScreen from './screens/CreateClientScreen';
 
 const Stack = createStackNavigator();
 
