@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, Dimensions,ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
+
+
+const { width, height } = Dimensions.get("window");
+
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [message, setMessage]=useState(null);
+  const [typeMessage, setTypeMessage]=useState(null);
+
+  useEffect(() => {
+    if (typeMessage==="error" && email && password){
+      setMessage(null);
+    }
+  }, [email,password]);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Por favor ingrese ambos campos.");
+      setTypeMessage("error");
+      setMessage("Error: Por favor ingrese ambos campos.");
       return;
     }
 
@@ -20,8 +33,10 @@ export default function Login({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Usuario logueado:", user);
-      Alert.alert("Login exitoso", "Has iniciado sesión correctamente.", 
-         navigation.reset({ index: 0, routes: [{ name: 'Home' }] }));
+      setMessage( "Has iniciado sesión correctamente."); 
+         navigation.reset({ index: 0, routes: [{ name: 'Home' }] 
+        });
+     
 
     } catch (error) {
       let errorMessage = "Hubo un problema al iniciar sesión.";
@@ -39,7 +54,8 @@ export default function Login({ navigation }) {
           errorMessage = "Error de conexión, por favor intenta más tarde.";
           break;
       }
-      Alert.alert("Error", errorMessage);
+      setMessage(errorMessage);
+      setTypeMessage("error")
     }
   };
 
@@ -55,10 +71,15 @@ export default function Login({ navigation }) {
       
   
       
-      <Text style={styles.title}>Iniciar sesión</Text>
+      <Text style={styles.title}>¡Bienvenido de nuevo!</Text>
+      {message &&( <Text style={[styles.message, styles.errorMessage]}>
+      
+          {message}
+        </Text>
+      )}
 
       <View style={styles.formBox}>
-      <Text style={styles.label}>Correo</Text>
+      <Text style={styles.label}></Text>
       <View style={styles.inputContainer}>
         <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
         <TextInput
@@ -68,22 +89,23 @@ export default function Login({ navigation }) {
           onChangeText={(text) => setEmail(text)}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor="#f0f0f0ff"
         />
       </View>
 
-      <Text style={styles.label}>Contraseña</Text>
+      <Text style={styles.label}></Text>
       <View style={styles.inputContainer}>
         <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
         <TextInput
           style={styles.input}
           placeholder="Ingrese su contraseña"
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#f0f0f0ff"
           value={password}
           onChangeText={(text) => setPassword (text)}
           secureTextEntry={!showPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
+          <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color="#e6e9dbff" />
         </TouchableOpacity>
       </View>
 
@@ -103,22 +125,18 @@ export default function Login({ navigation }) {
       {/* logo*/}
       <Text style={styles.logo}>Romina Magallanez</Text>
       <View style={styles.logoText}>
-        <View style={styles.line} >
-          <Text> ――― </Text>
+        <View style={styles.line}/>
+        <View >
+          <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
         </View> 
-        <View style={styles.TextM}>
-          <Text> MI TIEMPO</Text>
-        </View> 
-        <View style={styles.line}>
-          <Text> ――― </Text>
-          
-        </View> 
+        <View style={styles.line}  />
+        
       </View>
       
       <View style={styles.signUpContainer}>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.signUpText}>¿No tienes cuenta aún?  
-            <Text style={{color: "#ff5b5b"}}> Regístrarse</Text>
+          <Text style={styles.signUpText}>¿No tienes cuenta aún?   
+            <Text style={{color: "#ff5b5b"}}>  Regístrate</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -129,143 +147,136 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 55,
-    backgroundColor: '#1f1f1f',
-  },
- imageContainer: {
-    flex: 1,
-    borderBottomRightRadius: 60, // BorderRadius específico para la esquina derecha
-    overflow: 'hidden', // Esto es crucial para que el borderRadius funcione
-    position: 'absolute',
-    top: 0,
- },
-  fondo: {
-    width: 411,
-    height: 258,
-    
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    padding: 0,
-    flex: 1,
-    position:'relative',
-    top: 60,
-    zIndex: 0,
-  
+    alignItems: "center",
+    paddingHorizontal: width * 0.08,
+    paddingVertical: height*0.04,
+    backgroundColor: '#181515ff',
   },
 
-  label: {
-    alignSelf: 'flex-start',
-    fontSize: 16,
+  imageContainer: {
+    position: "absolute",
+    top:0,
+    borderBottomRightRadius: 100,
+    overflow: "hidden",
+    opacity: 0.4,
+  },
+  fondo:{
+
+    width: width *1.1 ,
+    height:height*0.3,
+  },
+  title: {
+    fontFamily: 'GreatVibes',
+    color: "#fff",
+    fontSize: width * 0.1,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginTop: height* 0.06,
+    marginBottom: height *0.02,
+  
+  },
+  label: {
+    color: "#a3b941ff",
+    fontSize: width * 0.04,
+    fontWeight: 'bold',
   },
   formBox:{
-    position:'absolute',
-    flex: 2,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    
     borderRadius: 20,
-    padding:5,
-    width: 365,
-    height: 350,
-    marginBottom: -110,
+    padding: width * 0.05,
+    width: "100%",
+    marginTop: height * 0.05,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderColor: '#ff5b5b',
-    marginBottom: 20,
-    width: '100%',
+    marginBottom: height * 0.04,
    
   },
   icon: {
-    marginRight: 10,
+    marginRight: 5,
+    marginTop: height * -0.006,
   },
   input: {
     flex: 1,
-    height: 45,
+    height: height * 0.05,
+    color:"#fff",
+    
   },
   optionsRow:{
     flexDirection:"row",
     justifyContent:'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 10,
+    marginVertical: height * 0.015,
   },
   remember:{
     flexDirection: 'row',
-    alignItems: 'left',
-    paddingLeft: 5,
+    alignItems: 'center',
   },
   rememberText:{
     color: "#fdfdfdff",
     marginLeft: 5,
-    fontSize: 12,
+    fontSize: width * 0.035,
   },
   forgot:{
-    color: '#142129ff',
-    textDecorationLine: "underline",
-    fontSize: 12,
-    textAlign: 'right',
-
+    color: '#c7d9e4ff',
+    fontSize: width * 0.030,
   },
   button: {
-    backgroundColor: '#ff5b5b',
-    paddingVertical: 12,
-    borderRadius: 20,
+    backgroundColor: '#fa4c4cff',
+    paddingVertical: height * 0.010,
+    borderRadius: 50,
     alignItems: 'center',
-    marginTop: 0,
-    bottom: -15,
+    marginTop: height * 0.03,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 25,
-    fontWeight: 'regular',
+    fontSize: width * 0.06,
   },
   logo:{
-    position:'relative',
-    bottom: 50,
-    fontSize: 32,
-    fontWeight:'regular',
+    color: "#fff",
+    fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
-    marginTop:10,
+    marginTop:height * 0.06,
   },
   logoText:{
-    position:'relative',
-    bottom: 50,
-    marginBottom: 10,
+    marginBottom: height * 0.04,
     flexDirection:'row',
-    alignItems: 'center',
-    justifyContent:'center',
+    justifyContent:"space-between",
+   
 
-    fontFamily:"Sansationlight"
   },
   line:{
-    width:50,
-    height:22,
-    flex:1,
+   
+    width:"35%",
+    backgroundColor: "#a5a3a3ff",
+    marginHorizontal: 8,
+    height: 1,
+    marginTop: height * 0.010, 
+    
   },
+  
   TextM:{
-    letterSpacing: 7,
-    fontSize: 20,
-    fontWeight:'light',
+    fontSize: width * 0.03,
+    color: "#b1a8a8ff"
+    
   },
   signUpContainer: {
-    position: 'relative',
-    bottom: 20,
-    alignSelf: 'center',
+    marginBottom: height * 0.04, 
   },
   signUpText: {
-    fontSize: 15,
-    alignSelf: 'left',
-
+    fontSize: width * 0.04,
     color: '#ffffffff',
-  }
+  },
+  message:{
+    marginTop: height * 0.01,
+    fontSize: width * 0.04,
+    textAlign: "center",
+  },
+  errorMessage:{
+    color:"#ff5b5b",
+  },
+
+ 
 });
 

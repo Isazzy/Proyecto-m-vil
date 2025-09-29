@@ -1,23 +1,25 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/config/firebaseConfig';
 import * as Font from "expo-font";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-// Screens de autenticación
+// Screens
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 
-// Screens de clientes
 import Home from './screens/Home';
+import SplashScreen from './screens/SplashScreen';
+
 
 const Stack = createStackNavigator();
 
 export default function App() {
-
-const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -31,8 +33,6 @@ const [fontsLoaded, setFontsLoaded] = useState(false);
     loadFonts();
   }, []);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       setIsAuthenticated(!!user);
@@ -42,19 +42,21 @@ const [fontsLoaded, setFontsLoaded] = useState(false);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={isAuthenticated ? 'Home' : 'Login'}>
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen name="Home" component={Home} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="SignUp" component={SignUp} />
-          </>
-        )}
+      <Stack.Navigator initialRouteName="SplashScreen">
+        <Stack.Screen
+          name="SplashScreen"
+          component={SplashScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="Home" component={Home} />
       </Stack.Navigator>
+
     </NavigationContainer>
   );
 }
-
