@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   fondo:{
 
     width: width *1.1 ,
-    height:height*0.3,
+    height:height*0.3,//esta es la imagen
   },
   title: {
     fontFamily: 'GreatVibes',
@@ -228,6 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: 'center',
     marginTop: height * 0.03,
+
   },
   buttonText: {
     color: '#fff',
@@ -267,6 +268,7 @@ const styles = StyleSheet.create({
   signUpText: {
     fontSize: width * 0.04,
     color: '#ffffffff',
+
   },
   message:{
     marginTop: height * 0.01,
