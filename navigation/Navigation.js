@@ -3,9 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';  
 import { auth } from '../src/config/firebaseConfig';  
-import Login from '../screens/Login.js';
-import SignUp from '../screens/SignUp.js';
-import Home from '../screens/Home.js';
+import Login from '../screens/Login';
+import SignUp from '../screens/SignUp';
+import Home from '../screens/Home';
 
 const Stack = createStackNavigator();
 
@@ -36,4 +36,3 @@ function Navigation() {
 }
 
 export default Navigation;
-
