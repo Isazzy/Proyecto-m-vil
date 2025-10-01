@@ -1,87 +1,114 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity,Dimensions } from "react-native";
+
+  const {width, height}= Dimensions.get("window");
 
 export default function SplashScreen({ navigation }) {
-  const progress = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Animación de 3 segundos (ajustable)
-    Animated.timing(progress, {
-      toValue: 1,
-      duration: 10000,
-      useNativeDriver: false,
-    }).start(() => {
-      navigation.replace("Login"); // cuando termina → Login
-    });
-  }, [navigation, progress]);
-
-  // Interpolamos para que la barra crezca en ancho
-  const width = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0%", "100%"],
-  });
-
+  
   return (
-    <ImageBackground
-      source={require('../assets/fondo.png')}
-      style={styles.container}
-    >
-      <Text style={styles.title}>Mi App</Text>
-
-      {/* Barra de progreso */}
-      <View style={styles.progressBar}>
-        <Animated.View style={[styles.progress, { width }]} />
-      </View>
-
-      {/* Botón para saltar */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.replace("Login")}
-      >
-        <Text style={styles.buttonText}>Saltar</Text>
-      </TouchableOpacity>
-    </ImageBackground>
+    <View style={styles.container}>
+            <View style={styles.imageContainer}>
+      
+              <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
+      
+            </View>  
+            
+           <View>
+              <Text style={styles.logo}>Romina Magallanez</Text>
+                <View style={styles.logoText}>
+                  <View style={styles.line}/>
+                    <View >
+                      <Text style={styles.TextM}> E  S  T  I  L  I  S  T  A </Text>
+                    </View> 
+                  <View style={styles.line}  />
+                   
+                </View>
+                <Text style={styles.Text1}>Cuidamos tu imagen, {"\n"}realzamos tu belleza. </Text>
+               
+            </View>
+        {/* Botón para saltar */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.replace("Login")}
+        >
+          <Text style={styles.buttonText}> Comenzar </Text>
+        </TouchableOpacity>
+      
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000",
+    paddingHorizontal: width * 0.08,
+    paddingVertical: height * 0.04,
+    backgroundColor: "#d6cbcbff",
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 30,
-  },
-  progressBar: {
-    width: "80%",
-    height: 6,
-    backgroundColor: "#555",
-    borderRadius: 3,
+  imageContainer: {
+    position: "absolute",
+    top: 0,
+    borderBottomLeftRadius: 44,
+    borderBottomRightRadius: 44,
     overflow: "hidden",
-    marginTop: 20,
+  
   },
-  progress: {
-    height: "100%",
-    backgroundColor: "#ff5b5b", // rojo (puedes cambiar)
+  fondo: {
+    width: width * 1.0,
+    height: height * 0.4, // altura de la imagen
+ 
   },
-  button: {
-    marginTop: 30,
-    backgroundColor: "#ff5b5b",
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 20,
+
+  logo:{
+    color: "#fff",
+    fontSize: width * 0.11, 
+    fontFamily: 'GreatVibes',
+    marginTop:height * 0.12,
+    textAlign:"center",
+  },
+  logoText:{
+    
+    marginBottom: height * 0.10,
+    flexDirection:"row",
+    justifyContent:"center", 
+  },
+  line:{
+    width:"35%",
+    backgroundColor: "#a5a3a3ff",
+    marginHorizontal: 8,
+    height: 1,
+    marginTop: height * 0.010, 
+    
+  },
+  
+  TextM:{
+    fontSize: width * 0.03,
+    color: "#b1a8a8ff"
+    
+  },
+  Text1:{
+    fontSize: width * 0.12, 
+     lineHeight: width * 0.16,  // mejor interlineado
+    color: "#2c3e50",          
+    textAlign: "auto",      
+    alignSelf: "flex-start",
+    marginTop: height * 0.07,  // separación desde arriba
+    marginHorizontal: width * 0.06, // padding lateral
+    fontWeight: "bold",
+  },
+    button: {
+    backgroundColor: '#fa4c4cff',
+    paddingVertical: height * 0.012,
+    paddingHorizontal: width * 0.1, 
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: height * 0.06,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    color: '#fff',
+    fontSize: width * 0.06,
   },
 });
-
 
 
