@@ -51,7 +51,16 @@ export default function App() {
           component={Login}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen 
+          name="SignUp" 
+          component={SignUp}
+          options={{
+            headerTransparent: true,       
+            headerTitle: "",                
+            headerTintColor: "#fff",      
+          }} 
+/>
+
         <Stack.Screen name="Home" component={Home} />
       </Stack.Navigator>
 

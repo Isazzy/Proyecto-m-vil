@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     fontSize: width * 0.11, 
     fontFamily: 'GreatVibes',
     marginTop:height * 0.12,
-    marginBottom: height * 0.01, 
+    textAlign:"center",
   },
   logoText:{
     
@@ -88,22 +88,22 @@ const styles = StyleSheet.create({
     
   },
   Text1:{
-    fontSize: width * 0.13, //ahi? mejor<
-     lineHeight: width * 0.15,  // mejor interlineado
+    fontSize: width * 0.12, 
+     lineHeight: width * 0.16,  // mejor interlineado
     color: "#2c3e50",          
     textAlign: "auto",      
     alignSelf: "flex-start",
     marginTop: height * 0.07,  // separación desde arriba
-    marginHorizontal: width * 0.08, // padding lateral
+    marginHorizontal: width * 0.06, // padding lateral
     fontWeight: "bold",
   },
     button: {
     backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.02,
-    paddingHorizontal: width * 0.2, 
+    paddingVertical: height * 0.012,
+    paddingHorizontal: width * 0.1, 
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: height * 0.08,
+    marginTop: height * 0.06,
   },
   buttonText: {
     color: '#fff',

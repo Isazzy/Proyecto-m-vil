@@ -25,7 +25,7 @@ export default function Login({ navigation }) {
   const handleLogin = async () => {
     if (!email || !password) {
       setTypeMessage("error");
-      setMessage("Error: Por favor ingrese ambos campos.");
+      setMessage("Por favor complete ambos campos.");
       return;
     }
 
@@ -61,7 +61,7 @@ export default function Login({ navigation }) {
 
 
   return (
-    
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
     <View style={styles.container}>
       <View style={styles.imageContainer}>
 
@@ -72,11 +72,14 @@ export default function Login({ navigation }) {
   
       
       <Text style={styles.title}>¡Bienvenido de nuevo!</Text>
-      {message &&( <Text style={[styles.message, styles.errorMessage]}>
-      
-          {message}
-        </Text>
-      )}
+
+      <View style={{ height: height * 0.01, justifyContent: "center", textAlign: "center", flexDirection: 'row',}}>
+        {message && (
+          <Text style={[styles.message, styles.errorMessage]}>
+            {message}
+          </Text>
+        )}
+      </View>
 
       <View style={styles.formBox}>
       <Text style={styles.label}></Text>
@@ -141,6 +144,7 @@ export default function Login({ navigation }) {
         </TouchableOpacity>
       </View>
     </View>
+    </ScrollView>
   );
 }
 
@@ -238,7 +242,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
-    marginTop:height * 0.06,
+    marginTop:height * 0.03,
   },
   logoText:{
     marginBottom: height * 0.04,
@@ -274,6 +278,7 @@ const styles = StyleSheet.create({
     marginTop: height * 0.01,
     fontSize: width * 0.04,
     textAlign: "center",
+    position: "absolute",
   },
   errorMessage:{
     color:"#ff5b5b",
