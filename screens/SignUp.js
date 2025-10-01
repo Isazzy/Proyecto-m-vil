@@ -184,7 +184,7 @@ export default function SignUp({ navigation }) {
                                     <FontAwesome
                                         name={showPassword ? "eye-slash" : "eye"}
                                         size={20}
-                                        color="#ccc"
+                                        color="#ccac"
                                     />
                                 </TouchableOpacity>
                             </View>
