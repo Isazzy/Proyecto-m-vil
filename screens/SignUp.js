@@ -19,6 +19,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
 const backgroundImage = require("../assets/fondocortina.png");
+const backgroundImage = require("../assets/fondo.png");
 
 
 export default function SignUp({ navigation }) {
@@ -30,6 +31,8 @@ export default function SignUp({ navigation }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordTouched, setPasswordTouched] = useState(false);
+
+    
 
     const passwordRules = [
         { label: 'Al menos 8 caracteres', test: (pw) => pw.length >= 8 },
@@ -54,8 +57,6 @@ export default function SignUp({ navigation }) {
             Alert.alert("Error", "Las contraseñas no coinciden.");
             return;
         }
-
-        // Regex corregida y consistente con las reglas visibles: mínimo 8 caracteres
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
         
         if (!passwordRegex.test(password)) {
@@ -96,45 +97,53 @@ export default function SignUp({ navigation }) {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
-            <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1 }}>
+            <ImageBackground 
+                source={require('../assets/fondo.png')} 
+                resizeMode="cover" 
+                style={styles.fondo}
+                >
+                {/* 🔹 Overlay negro encima de la imagen */}
+                <View style={styles.overlay} />
+            </ImageBackground>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                     <View style={styles.container}>
-                        <Text style={styles.title}>Regístrarse</Text>
+                        <Text style={styles.title}>Regístrate</Text>
 
                         <View style={styles.container2}>
-                            {/* ... (Otros Inputs - Nombre, Apellido, Correo) ... */}
-
                             {/* Nombre Input */}
-                            <Text style={styles.label}>Nombre</Text>
+                  
                             <View style={styles.inputContainer}>
-                                <FontAwesome name="user" size={20} color="#ccc" style={styles.icon} />
+                                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Ingrese su nombre"
+                                    placeholderTextColor="#f0f0f0ff"
                                     value={firstName}
                                     onChangeText={setFirstName}
                                 />
                             </View>
 
                             {/* Apellido Input */}
-                            <Text style={styles.label}>Apellido</Text>
+                         
                             <View style={styles.inputContainer}>
-                                <FontAwesome name="user" size={20} color="#ccc" style={styles.icon} />
+                                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Ingrese su apellido"
+                                    placeholderTextColor="#f0f0f0ff"
                                     value={lastName}
                                     onChangeText={setLastName}
                                 />
                             </View>
 
                             {/* Correo Input */}
-                            <Text style={styles.label}>Correo</Text>
+                           
                             <View style={styles.inputContainer}>
-                                <FontAwesome name="envelope" size={20} color="#ccc" style={styles.icon} />
+                                <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Ingrese su correo"
+                                    placeholderTextColor="#f0f0f0ff"
                                     value={email}
                                     onChangeText={setEmail}
                                     keyboardType="email-address"
@@ -143,12 +152,13 @@ export default function SignUp({ navigation }) {
                             </View>
                             
                             {/* Contraseña Input */}
-                            <Text style={styles.label}>Contraseña</Text>
+                          
                             <View style={styles.inputContainer}>
-                                <FontAwesome name="lock" size={20} color="#ccc" style={styles.icon} />
+                                <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Ingrese su contraseña"
+                                    placeholderTextColor="#f0f0f0ff"
                                     value={password}
                                     onChangeText={(text) => {
                                         setPassword(text);
@@ -157,7 +167,7 @@ export default function SignUp({ navigation }) {
                                     secureTextEntry={!showPassword}
                                 />
 
-                                {/*  CAMBIO CLAVE: Condición de Renderizado del Cartel */}
+                                {/*  Condición de Renderizado del Cartel */}
                                 {/* Ahora se muestra SOLO si ha sido tocado Y NO cumple todas las reglas */}
                                 {passwordTouched && !passesAllRules(password) && (
                                     <View style={styles.passwordRulesBox}>
@@ -184,18 +194,19 @@ export default function SignUp({ navigation }) {
                                     <FontAwesome
                                         name={showPassword ? "eye-slash" : "eye"}
                                         size={20}
-                                        color="#ccac"
+                                        color="#e6e9dbff"
                                     />
                                 </TouchableOpacity>
                             </View>
                             
                             {/* Confirmar Contraseña Input */}
-                            <Text style={styles.label}>Confirmar Contraseña</Text>
+                            
                             <View style={styles.inputContainer}>
-                                <FontAwesome name="lock" size={20} color="#ccc" style={styles.icon} />
+                                <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Confirme su contraseña"
+                                    placeholderTextColor="#f0f0f0ff"
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
                                     secureTextEntry={!showConfirmPassword}
@@ -204,7 +215,7 @@ export default function SignUp({ navigation }) {
                                     <FontAwesome
                                         name={showConfirmPassword ? "eye-slash" : "eye"}
                                         size={20}
-                                        color="#ccc"
+                                        color="#e6e9dbff"
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -222,7 +233,8 @@ export default function SignUp({ navigation }) {
                         </View>
                     </View>
                 </ScrollView>
-            </ImageBackground>
+            
+            
         </KeyboardAvoidingView>
     );
 }
@@ -233,20 +245,26 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         paddingHorizontal: width * 0.08,
-        paddingVertical: height * 0.00,
+        paddingVertical: height * 0.09,
     },
     fondo:{
         zIndex:0,
         width: width *1.0,
         height:height*1.0,
-        position: "absolute"
+        position: "absolute",
+        
     },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0,0,0,0.6)", // ajustá el 0.6 para más o menos oscuridad
+        opacity:1,
+        },
     container2: {
-        borderRadius: 20,
+        borderRadius: 10,
         padding: width * 0.05,
         width: "100%",
-        backgroundColor: "#504f4fff",
-        opacity: 0.85,
+        backgroundColor: "#181515ff",
+        
     },
     title: { 
         color: "#fff",
@@ -260,7 +278,7 @@ const styles = StyleSheet.create({
         fontSize: width * 0.04,
         fontWeight: 'bold',
         marginBottom: 5,
-        color: "#000",
+        color: "#fff",
     },
     inputContainer: {
         flexDirection: 'row',
@@ -302,9 +320,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     passwordRulesBox: {
-        // Se cambió el marginBottom a 0 para que no agregue espacio cuando desaparece
+        
         marginTop: 5,
-        marginBottom: 15, // Mantener marginBottom aquí si quieres que ocupe espacio cuando está visible
+        marginBottom: 15, 
         backgroundColor: '#f0f0f0',
         padding: 10,
         borderRadius: 8,
