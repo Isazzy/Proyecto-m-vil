@@ -18,7 +18,6 @@ import { auth } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
-const backgroundImage = require("../assets/fondocortina.png");
 const backgroundImage = require("../assets/fondo.png");
 
 
@@ -167,28 +166,7 @@ export default function SignUp({ navigation }) {
                                     secureTextEntry={!showPassword}
                                 />
 
-                                {/*  Condición de Renderizado del Cartel */}
-                                {/* Ahora se muestra SOLO si ha sido tocado Y NO cumple todas las reglas */}
-                                {passwordTouched && !passesAllRules(password) && (
-                                    <View style={styles.passwordRulesBox}>
-                                        {passwordRules.map((rule, index) => {
-                                            const passed = rule.test(password);
-                                            return (
-                                                <View key={index} style={styles.ruleItem}>
-                                                    <FontAwesome
-                                                        name={passed ? "check-circle" : "circle"}
-                                                        size={16}
-                                                        color={passed ? "#4CAF50" : "#ccc"}
-                                                        style={{ marginRight: 8 }}
-                                                    />
-                                                    <Text style={[styles.ruleText, { color: passed ? "#4CAF50" : "#666" }]}>
-                                                        {rule.label}
-                                                    </Text>
-                                                </View>
-                                            );
-                                        })}
-                                    </View>
-                                )}
+                                
 
                                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                                     <FontAwesome
@@ -233,6 +211,29 @@ export default function SignUp({ navigation }) {
                         </View>
                     </View>
                 </ScrollView>
+
+                {/*  Condición de Renderizado del Cartel */}
+                                {/* Ahora se muestra SOLO si ha sido tocado Y NO cumple todas las reglas */}
+                                {passwordTouched && !passesAllRules(password) && (
+                                    <View style={styles.passwordRulesBox}>
+                                        {passwordRules.map((rule, index) => {
+                                            const passed = rule.test(password);
+                                            return (
+                                                <View key={index} style={styles.ruleItem}>
+                                                    <FontAwesome
+                                                        name={passed ? "check-circle" : "circle"}
+                                                        size={16}
+                                                        color={passed ? "#4CAF50" : "#ccc"}
+                                                        style={{ marginRight: 8 }}
+                                                    />
+                                                    <Text style={[styles.ruleText, { color: passed ? "#4CAF50" : "#666" }]}>
+                                                        {rule.label}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                )}
             
             
         </KeyboardAvoidingView>
