@@ -18,7 +18,6 @@ import { auth } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
-const backgroundImage = require("../assets/fondocortina.png");
 const backgroundImage = require("../assets/fondo.png");
 
 
@@ -57,6 +56,7 @@ export default function SignUp({ navigation }) {
             Alert.alert("Error", "Las contraseñas no coinciden.");
             return;
         }
+
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
         
         if (!passwordRegex.test(password)) {
@@ -167,28 +167,7 @@ export default function SignUp({ navigation }) {
                                     secureTextEntry={!showPassword}
                                 />
 
-                                {/*  Condición de Renderizado del Cartel */}
-                                {/* Ahora se muestra SOLO si ha sido tocado Y NO cumple todas las reglas */}
-                                {passwordTouched && !passesAllRules(password) && (
-                                    <View style={styles.passwordRulesBox}>
-                                        {passwordRules.map((rule, index) => {
-                                            const passed = rule.test(password);
-                                            return (
-                                                <View key={index} style={styles.ruleItem}>
-                                                    <FontAwesome
-                                                        name={passed ? "check-circle" : "circle"}
-                                                        size={16}
-                                                        color={passed ? "#4CAF50" : "#ccc"}
-                                                        style={{ marginRight: 8 }}
-                                                    />
-                                                    <Text style={[styles.ruleText, { color: passed ? "#4CAF50" : "#666" }]}>
-                                                        {rule.label}
-                                                    </Text>
-                                                </View>
-                                            );
-                                        })}
-                                    </View>
-                                )}
+                                
 
                                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                                     <FontAwesome
@@ -224,19 +203,50 @@ export default function SignUp({ navigation }) {
                                 <Text style={styles.buttonText}>Crear Cuenta</Text>
                             </TouchableOpacity>
                         </View>
-
+                                     
+                                     {/* logo*/}
+                                          <Text style={styles.logo}>Romina Magallanez</Text>
+                                          <View style={styles.logoText}>
+                                            <View style={styles.line}/>
+                                            <View >
+                                              <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
+                                            </View> 
+                                            <View style={styles.line}  />
+                                    </View>
                         <View style={styles.signUpContainer}>
-                            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                                <Text style={styles.signUpText}>¿Ya tienes cuenta?</Text>
-                                <Text style={styles.signUpText2}>Inicia sesión</Text>
-                            </TouchableOpacity>
-                        </View>
+                                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                                  <Text style={styles.signUpText}>¿Ya tienes cuenta?   
+                                    <Text style={{color: "#ff5b5b"}}>  Inicia sesión</Text>
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
                     </View>
                 </ScrollView>
-            
-            
+            {/*  Condición de Renderizado del Cartel */}
+                                {/* Ahora se muestra SOLO si ha sido tocado Y NO cumple todas las reglas */}
+                                {passwordTouched && !passesAllRules(password) && (
+                                    <View style={styles.passwordRulesBox}>
+                                        {passwordRules.map((rule, index) => {
+                                            const passed = rule.test(password);
+                                            return (
+                                                <View key={index} style={styles.ruleItem}>
+                                                    <FontAwesome
+                                                        name={passed ? "check-circle" : "circle"}
+                                                        size={16}
+                                                        color={passed ? "#4CAF50" : "#ccc"}
+                                                        style={{ marginRight: 8 }}
+                                                    />
+                                                    <Text style={[styles.ruleText, { color: passed ? "#4CAF50" : "#666" }]}>
+                                                        {rule.label}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                )}
         </KeyboardAvoidingView>
     );
+
 }
 
 // Estilos (sin cambios)
@@ -293,7 +303,7 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         height: height * 0.05,
-        color: "#000",
+        color: "#fff",
     },
     button: {
         backgroundColor: '#FF5B5B',
@@ -336,4 +346,39 @@ const styles = StyleSheet.create({
     ruleText: {
         fontSize: 14,
     },
+    signUpContainer: {
+    marginBottom: height * 0.04, 
+  },
+  signUpText: {
+    fontSize: width * 0.04,
+    color: '#ffffffff',
+logo:{
+    color: "#fff",
+    fontSize: width * 0.10,
+    fontFamily: 'GreatVibes',
+    marginTop:height * 0.03,
+  },
+  logoText:{
+    marginBottom: height * 0.04,
+    flexDirection:'row',
+    justifyContent:"space-between",
+   
+
+  },
+  line:{
+   
+    width:"35%",
+    backgroundColor: "#a5a3a3ff",
+    marginHorizontal: 8,
+    height: 1,
+    marginTop: height * 0.010, 
+    
+  },
+  
+  TextM:{
+    fontSize: width * 0.03,
+    color: "#b1a8a8ff"
+    
+  },
+  },
 });
