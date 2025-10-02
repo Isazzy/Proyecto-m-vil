@@ -12,7 +12,6 @@ export default function SplashScreen({ navigation }) {
               <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
       
             </View>  
-            
            <View>
               <Text style={styles.logo}>Romina Magallanez</Text>
                 <View style={styles.logoText}>
