@@ -12,7 +12,6 @@ export default function SplashScreen({ navigation }) {
               <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
       
             </View>  
-            
            <View>
               <Text style={styles.logo}>Romina Magallanez</Text>
                 <View style={styles.logoText}>
@@ -46,6 +45,8 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.04,
     backgroundColor: "#d6cbcbff",
   },
+  //cambiar el boton de comenzar, un poco mas chico, cambiar el mensaje a "Por favor complete ambos campos"
+  //Subir un poco más el enlace de la lista de registros, "No tenes una cuenta aún, Registrate"
   imageContainer: {
     position: "absolute",
     top: 0,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     textAlign: "auto",      
     alignSelf: "flex-start",
     marginTop: height * 0.07,  // separación desde arriba
-    marginHorizontal: width * 0.06, // padding lateral
+    marginHorizontal: width * 0.08, // padding lateral 
     fontWeight: "bold",
   },
     button: {

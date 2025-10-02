@@ -61,8 +61,18 @@
 
 // /screens/HomeScreen.js
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Requiere instalación previa
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  FlatList,
+  Alert,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { signOut } from 'firebase/auth'; // Asegúrate de importar auth si usás Firebase
+import { auth } from '../firebase'; // Ajusta la ruta si es diferente
 
 const quickAccessItems = [
   { title: 'Productos', desc: 'Gestiona todos los productos disponibles.' },
@@ -73,7 +83,17 @@ const quickAccessItems = [
   { title: 'Compras', desc: 'Gestiona todas tus compras.' },
 ];
 
-const Home = () => {
+const Home = ({ navigation }) => {
+  const handleLogOut = async () => {
+    try {
+      await signOut(auth);
+      Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
+      navigation.replace('Login');
+    } catch (error) {
+      Alert.alert("Error", "Hubo un problema al cerrar sesión.");
+    }
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.iconRow}>
@@ -103,6 +123,12 @@ const Home = () => {
         contentContainerStyle={{ paddingBottom: 100 }}
       />
 
+      <View style={{ alignItems: 'center', marginVertical: 20 }}>
+        <TouchableOpacity style={styles.button} onPress={handleLogOut}>
+          <Text style={styles.buttonText}>Cerrar sesión</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.bottomNav}>
         <View style={styles.navItem}>
           <Icon name="home" size={24} color="white" />
@@ -118,6 +144,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 //css
 const styles = StyleSheet.create({
