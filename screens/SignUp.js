@@ -20,6 +20,13 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 const { width, height } = Dimensions.get("window");
 const backgroundImage = require("../assets/fondo.png");
 
+const isValidEmailDomain = (email) => {
+    if (!email.includes("@")) return false;
+    const domain = 
+    email.trim().toLowerCase().split("@")[1];
+      const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return domainPattern.test(domain);   
+  };
 
 export default function SignUp({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -33,6 +40,7 @@ export default function SignUp({ navigation }) {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
+
 
   const passwordRules = [
     { rule: /.{8,}/, label: "Al menos 8 caracteres" },
@@ -48,6 +56,8 @@ export default function SignUp({ navigation }) {
       setMessage(null);
     }
   }, [email, password, confirmPassword]);
+  
+  
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -67,6 +77,11 @@ export default function SignUp({ navigation }) {
     setMessage("La contraseña debe cumplir con los requisitos.");
     return;
 
+    if (!isValidEmailDomain(email)){
+      setTypeMessage("error");
+      setMessage("El dominio del correo no es válido.");
+      return;
+    }
 }
 
     try {
@@ -165,8 +180,8 @@ export default function SignUp({ navigation }) {
               />
             </View>
 
-            {/* Correo */}
-            <View style={styles.inputContainer}>
+            {/* Correo  */}
+            <View style={styles.inputContainer} >
               <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
               <TextInput
                 style={styles.input}
@@ -176,8 +191,15 @@ export default function SignUp({ navigation }) {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                onBlur={() => {
+                  if (email && ! isValidEmailDomain(email)){
+                    setTypeMessage("error");
+                    setMessage("El dominio del correo")
+                  }
+                }}
               />
             </View>
+           
 
             {/* Contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: passwordBorderColor, borderBottomWidth: 2 }]}>
@@ -208,7 +230,7 @@ export default function SignUp({ navigation }) {
             {passwordTouched && !passesAllRules(password) && passwordFocused && (
                 <View style={styles.passwordRulesBox}>
                 <Text style={{ fontWeight: 'bold', color:"#f1e6e6ff", }}>
-                    La contraseña debe tener:
+                    La contraseña debe contener:
                 </Text>
                 {passwordRules.map(({ rule, label }, index) => {
                     const passed = rule.test(password);
