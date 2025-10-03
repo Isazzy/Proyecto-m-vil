@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackgr
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ForgotPassword from './ForgotPassword';
 
 
 const { width, height } = Dimensions.get("window");
@@ -16,6 +18,24 @@ export default function Login({ navigation }) {
   const [message, setMessage]=useState(null);
   const [typeMessage, setTypeMessage]=useState(null);
 
+  useEffect(() =>{
+    const loadCredentials = async() =>{
+      try{
+        const savedEmail = await AsyncStorage.getItem("email");
+        const savedPassword = await AsyncStorage.getItem("password");
+        if (savedEmail&&savedPassword){
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRemember(true);
+        }
+      } catch (error){
+        setTypeMessage("error")
+        setMessage("Error al cargar credenciales");
+      }
+    };
+    loadCredentials();
+  },[]);
+   
   useEffect(() => {
     if (typeMessage==="error" && email && password){
       setMessage(null);
@@ -33,13 +53,20 @@ export default function Login({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Usuario logueado:", user);
+      if (remember){
+        await AsyncStorage.setItem("email", email);
+        await AsyncStorage.setItem("password", password);
+      } else{
+        await AsyncStorage.removeItem("email");
+        await AsyncStorage.removeItem("password");
+      }
       setMessage( "Has iniciado sesión correctamente."); 
          navigation.reset({ index: 0, routes: [{ name: 'Home' }] 
         });
      
 
     } catch (error) {
-      let errorMessage = "Hubo un problema al iniciar sesión.";
+      let errorMessage = "Correo y/o contraseña incorrectas.";
       switch (error.code) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido.";
@@ -115,11 +142,12 @@ export default function Login({ navigation }) {
       <View style={styles.optionsRow}>
         <TouchableOpacity style={styles.remember} onPress={() => setRemember(!remember)}>
           <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color="#fff" />
-          <Text style = {styles.rememberText}>Recordar Usuario</Text>
+          <Text style = {styles.rememberText}>Recordar</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
           <Text style={styles.forgot}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
+
       </View>
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
@@ -138,7 +166,7 @@ export default function Login({ navigation }) {
       
       <View style={styles.signUpContainer}>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.signUpText}>¿No tenes cuenta aún?   
+          <Text style={styles.signUpText}>¿No tenés cuenta aún?   
             <Text style={{color: "#ff5b5b"}}>  Regístrate</Text>
           </Text>
         </TouchableOpacity>
@@ -212,6 +240,7 @@ const styles = StyleSheet.create({
     flexDirection:"row",
     justifyContent:'space-between',
     marginVertical: height * 0.015,
+    marginTop: height * -0.009,
   },
   remember:{
     flexDirection: 'row',
@@ -220,7 +249,7 @@ const styles = StyleSheet.create({
   rememberText:{
     color: "#fdfdfdff",
     marginLeft: 5,
-    fontSize: width * 0.035,
+    fontSize: width * 0.032,
   },
   forgot:{
     color: '#c7d9e4ff',
