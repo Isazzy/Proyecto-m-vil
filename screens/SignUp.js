@@ -17,6 +17,14 @@ import { auth } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
+const backgroundImage = require("../assets/fondo.png");
+const allowedDomains = ["gmail.com", "hotmail.com", "yahoo.com"];
+
+const isValidEmailDomain = (email) => {
+  if (!email.includes("@")) return false;
+  const domain = email.trim().toLowerCase().split("@")[1];
+  return allowedDomains.includes(domain);
+};
 
 export default function SignUp({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -74,7 +82,7 @@ export default function SignUp({ navigation }) {
   });
 
   const passwordRules = [
-    { rule: /.{8,}/, label: "Al menos 8 caracteres" },
+    { rule: /.{8,}/, label: "Al menos 8 carácteres" },
     { rule: /[A-Z]/, label: "Una letra mayúscula" },
     { rule: /[a-z]/, label: "Una letra minúscula" },
     { rule: /[0-9]/, label: "Un número" },
@@ -87,11 +95,19 @@ export default function SignUp({ navigation }) {
       setMessage(null);
     }
   }, [email, password, confirmPassword]);
+  
+  
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setTypeMessage("error");
       setMessage("Todos los campos son obligatorios.");
+      return;
+    }
+
+    if (!isValidEmailDomain(email)) {
+      setTypeMessage("error");
+      setMessage("El dominio del correo no es válido.");
       return;
     }
 
@@ -137,13 +153,13 @@ export default function SignUp({ navigation }) {
     ? '#FF5B5B'
     : passesAllRules(password)
       ? '#4CAF50'
-      : '#d61717';
+      : '#817b7bff';
 
   const confirmPasswordBorderColor = confirmPassword.length === 0
     ? '#FF5B5B'
     : confirmPassword === password
       ? '#4CAF50'
-      : '#d61717';
+      : '#817b7bff';
 
   return (
     <KeyboardAvoidingView
@@ -184,11 +200,15 @@ export default function SignUp({ navigation }) {
               <TextInput
                 style={styles.input}
                 value={firstName}
-                onChangeText={setFirstName}
                 onFocus={() => handleFocus(firstAnim)}
                 onBlur={() => handleBlur(firstAnim, firstName)}
                 placeholder=""
                 placeholderTextColor="#f0f0f0ff"
+                onChangeText={(text) => {
+                  // Solo letras (mayúsculas, minúsculas, acentos, ñ) y espacios
+                  const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                  setFirstName(filtered);
+                }}
               />
             </View>
 
@@ -199,16 +219,20 @@ export default function SignUp({ navigation }) {
               <TextInput
                 style={styles.input}
                 value={lastName}
-                onChangeText={setLastName}
                 onFocus={() => handleFocus(lastAnim)}
                 onBlur={() => handleBlur(lastAnim, lastName)}
                 placeholder=""
                 placeholderTextColor="#f0f0f0ff"
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                  setLastName(filtered);
+                }}
               />
             </View>
 
-            {/* Correo */}
-            <View style={styles.inputContainer}>
+
+            {/* Correo  */}
+            <View style={styles.inputContainer} >
               <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
               <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
               <TextInput
@@ -216,13 +240,19 @@ export default function SignUp({ navigation }) {
                 value={email}
                 onChangeText={setEmail}
                 onFocus={() => handleFocus(emailAnim)}
-                onBlur={() => handleBlur(emailAnim, email)}
                 placeholder=""
                 placeholderTextColor="#f0f0f0ff"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                onBlur={() => {
+                  if (emailAnim && ! isValidEmailDomain(email)){
+                    setTypeMessage("error");
+                    setMessage("El dominio del correo no es válido")
+                  }
+                }}
               />
             </View>
+           
 
             {/* Contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: passwordBorderColor, borderBottomWidth: 2 }]}>
@@ -312,7 +342,7 @@ export default function SignUp({ navigation }) {
 
           <View style={styles.LoginContainer}>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.LoginText}>¿Ya tenes una cuenta?
+              <Text style={styles.LoginText}>¿Ya tenés una cuenta?
                 <Text style={{ color: "#ff5b5b" }}>  Iniciar sesión </Text>
               </Text>
             </TouchableOpacity>
@@ -417,7 +447,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ruleText: {
-    fontSize: 14,
+    fontSize: 10,
   },
   message: {
     fontSize: width * 0.04,
