@@ -4,6 +4,7 @@ import Animated, { FadeInDown, FadeInLeft, FadeInUp } from "react-native-reanima
 
 const { width, height } = Dimensions.get("window");
 
+
 export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions,ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { FadeInDown, FadeInLeft, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInLeft, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
 
@@ -16,6 +16,27 @@ export default function Login({ navigation }) {
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
 
+  // Animaciones de labels
+  const emailAnim = useSharedValue(0);
+  const passAnim = useSharedValue(0);
+
+  const emailLabelStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: 35,
+    top: withTiming(emailAnim.value ? -10 : 12, { duration: 200 }),
+    fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
+    color: emailAnim.value ? '#ff5b5b' : '#aaa',
+  }));
+
+  const passLabelStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: 35,
+    top: withTiming(passAnim.value ? -10 : 12, { duration: 200 }),
+    fontSize: withTiming(passAnim.value ? 13 : 16, { duration: 200 }),
+    color: passAnim.value ? '#ff5b5b' : '#aaa',
+  }));
+
+  // Cargar credenciales guardadas
   useEffect(() => {
     const loadCredentials = async () => {
       try {
@@ -25,6 +46,8 @@ export default function Login({ navigation }) {
           setEmail(savedEmail);
           setPassword(savedPassword);
           setRemember(true);
+          emailAnim.value = 1;
+          passAnim.value = 1;
         }
       } catch (error) {
         setTypeMessage("error");
@@ -35,9 +58,7 @@ export default function Login({ navigation }) {
   }, []);
 
   useEffect(() => {
-    if (typeMessage === "error" && email && password) {
-      setMessage(null);
-    }
+    if (typeMessage === "error" && email && password) setMessage(null);
   }, [email, password]);
 
   const handleLogin = async () => {
@@ -50,7 +71,6 @@ export default function Login({ navigation }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Usuario logueado:", user);
       if (remember) {
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("password", password);
@@ -81,52 +101,55 @@ export default function Login({ navigation }) {
     }
   };
 
-
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
       <View style={styles.container}>
         <View style={styles.imageContainer}>
           <Animated.Image
-              entering={FadeInLeft.delay(220).duration(1600)}
-                source={require('../assets/fondo.png')} style={styles.fondo} />
+            entering={FadeInLeft.duration(1600)}
+            source={require('../assets/fondo.png')}
+            style={styles.fondo}
+          />
         </View>
 
-        <Animated.Text entering={FadeInDown.delay(200).duration(1600)} 
-        style={styles.title}>¡Bienvenido de nuevo!</Animated.Text>
+        <Animated.Text entering={FadeInDown.duration(1600)} style={styles.title}>
+          ¡Bienvenido de nuevo!
+        </Animated.Text>
 
         <View style={{ height: height * 0.01, justifyContent: "center", textAlign: "center", flexDirection: 'row' }}>
-          {message && (
-            <Text style={[styles.message, styles.errorMessage]}>
-              {message}
-            </Text>
-          )}
+          {message && <Text style={[styles.message, styles.errorMessage]}>{message}</Text>}
         </View>
 
         <View style={styles.formBox}>
-          <Text style={styles.label}></Text>
+          {/* Correo */}
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
+            <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
             <TextInput
               style={styles.input}
-              placeholder="Ingrese su correo"
+              placeholder=""
               value={email}
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               placeholderTextColor="#f0f0f0ff"
+              onFocus={() => emailAnim.value = 1} 
+              onBlur={() => emailAnim.value = email ? 1 : 0} 
             />
           </View>
 
-          <Text style={styles.label}></Text>
+          {/* Contraseña */}
           <View style={styles.inputContainer}>
             <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+            <Animated.Text style={passLabelStyle}>Contraseña</Animated.Text>
             <TextInput
               style={styles.input}
-              placeholder="Ingrese su contraseña"
-              placeholderTextColor="#f0f0f0ff"
+              placeholder=""
               value={password}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              onFocus={() => passAnim.value = 1}
+              onBlur={() => passAnim.value = password ? 1 : 0}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color="#e6e9dbff" />
@@ -134,7 +157,20 @@ export default function Login({ navigation }) {
           </View>
 
           <View style={styles.optionsRow}>
-            <TouchableOpacity style={styles.remember} onPress={() => setRemember(!remember)}>
+            <TouchableOpacity 
+              style={styles.remember} 
+              onPress={async () => {
+                setRemember(!remember);
+                if (remember) { // si estaba activado y ahora se desmarca
+                  setEmail('');
+                  setPassword('');
+                  emailAnim.value = 0;
+                  passAnim.value = 0;
+                  await AsyncStorage.removeItem("email");
+                  await AsyncStorage.removeItem("password");
+                }
+              }}
+            >
               <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color="#fff" />
               <Text style={styles.rememberText}>Recordar</Text>
             </TouchableOpacity>
@@ -168,7 +204,6 @@ export default function Login({ navigation }) {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -39,7 +39,6 @@ export default function SignUp({ navigation }) {
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
 
-  // === Animaciones de labels ===
   const firstAnim = useState(new Animated.Value(0))[0];
   const lastAnim = useState(new Animated.Value(0))[0];
   const emailAnim = useState(new Animated.Value(0))[0];
@@ -153,13 +152,13 @@ export default function SignUp({ navigation }) {
     ? '#FF5B5B'
     : passesAllRules(password)
       ? '#4CAF50'
-      : '#817b7bff';
+      : '#8d0000ff';
 
   const confirmPasswordBorderColor = confirmPassword.length === 0
     ? '#FF5B5B'
     : confirmPassword === password
       ? '#4CAF50'
-      : '#817b7bff';
+      : '#8d0000ff';
 
   return (
     <KeyboardAvoidingView
@@ -180,7 +179,7 @@ export default function SignUp({ navigation }) {
           <Text style={styles.title}>Regístrate</Text>
 
           {/* Mensaje */}
-          <View style={{ height: height * 0.02, justifyContent: "center", flexDirection: 'row', marginBottom: height * 0.02 }}>
+          <View style={{ height: height * 0.02, justifyContent: "center", flexDirection: 'row', marginBottom: height * 0.03 }}>
             {message && (
               <Text style={[
                 styles.message,
@@ -235,6 +234,7 @@ export default function SignUp({ navigation }) {
             </View>
 
             {/* Correo  */}
+            <View style={[styles, {marginTop: -height * 0.023}]}>
               <View style={styles.inputContainer} >
                 <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
                 <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
@@ -248,7 +248,7 @@ export default function SignUp({ navigation }) {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   onBlur={() => {
-                    if (email && ! isValidEmailDomain(emailAnim)){
+                    if (email && ! isValidEmailDomain(email)){
                       setTypeMessage("error");
                       setMessage("El dominio del correo no es válido")
                     }
@@ -256,7 +256,7 @@ export default function SignUp({ navigation }) {
                   }}
                 />
               </View>
-           
+            </View>
 
             {/* Contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: passwordBorderColor, borderBottomWidth: 2 }]}>
@@ -273,7 +273,6 @@ export default function SignUp({ navigation }) {
                 onBlur={() => { handleBlur(passAnim, password); setPasswordFocused(false); }}
                 secureTextEntry={!showPassword}
                 placeholder=""
-                placeholderTextColor="#f0f0f0ff"
               />      
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                 <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
@@ -292,14 +291,14 @@ export default function SignUp({ navigation }) {
                     <View key={index} style={styles.ruleItem}>
                       <FontAwesome
                         name={passed ? "check-circle" : "times-circle"}
-                        size={16}
-                        color={passed ? "#4CAF50" : "#d61717ff"}
-                        style={{ marginRight: 8 }}
+                        size={14}
+                        color={passed ? "#4CAF50" : "#a82284ff"}
+                        style={{ marginRight: 6 }}
                       />
                       <Text
                         style={[
                           styles.ruleText,
-                          { color: passed ? "#4CAF50" : "#d61717ff" },
+                          { color: passed ? "#4CAF50" : "#a82284ff" },
                         ]}
                       >
                         {label}
@@ -388,6 +387,7 @@ const styles = StyleSheet.create({
     fontSize: width * 0.1,
     fontWeight: 'bold',
     marginTop: height * 0.02,
+    marginBottom: height * 0.026,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -456,12 +456,21 @@ const styles = StyleSheet.create({
   message: {
     fontSize: width * 0.04,
     textAlign: "center",
+    marginBottom: height * 0.1,
     position: "absolute",
   },
   errorMessage: {
     color: "#ff5b5b",
+     marginBottom: height * 0.1,
+    
   },
   successMessage: {
     color: "#4CAF50",
+     marginBottom: height * 0.1,
   },
+  LoginContainer: {
+  marginTop: height * 0.02,
+  alignItems: 'center',
+}
+
 });
