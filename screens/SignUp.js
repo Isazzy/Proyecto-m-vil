@@ -194,64 +194,68 @@ export default function SignUp({ navigation }) {
 
           <View style={styles.container2}>
             {/* Nombre */}
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
-              <Animated.Text style={labelStyle(firstAnim)}>Nombre</Animated.Text>
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onFocus={() => handleFocus(firstAnim)}
-                onBlur={() => handleBlur(firstAnim, firstName)}
-                placeholder=""
-                placeholderTextColor="#f0f0f0ff"
-                onChangeText={(text) => {
-                  // Solo letras (mayúsculas, minúsculas, acentos, ñ) y espacios
-                  const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
-                  setFirstName(filtered);
-                }}
-              />
-            </View>
+            <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom:height * 0.026}}>
+              <View style={[styles.inputContainer, {flex:1.1, marginRight: 8}]}>
+                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(firstAnim)}>Nombre</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onFocus={() => handleFocus(firstAnim)}
+                  onBlur={() => handleBlur(firstAnim, firstName)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  onChangeText={(text) => {
+                    // Solo letras (mayúsculas, minúsculas, acentos, ñ) y espacios
+                    const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                    setFirstName(filtered);
+                  }}
+                />
+                
+              </View>
+            
 
             {/* Apellido */}
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
-              <Animated.Text style={labelStyle(lastAnim)}>Apellido</Animated.Text>
-              <TextInput
-                style={styles.input}
-                value={lastName}
-                onFocus={() => handleFocus(lastAnim)}
-                onBlur={() => handleBlur(lastAnim, lastName)}
-                placeholder=""
-                placeholderTextColor="#f0f0f0ff"
-                onChangeText={(text) => {
-                  const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
-                  setLastName(filtered);
-                }}
-              />
+              <View style={[styles.inputContainer, {flex:1, marginLeft: 18}]}>
+                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(lastAnim)}>Apellido</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={lastName}
+                  onFocus={() => handleFocus(lastAnim)}
+                  onBlur={() => handleBlur(lastAnim, lastName)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  onChangeText={(text) => {
+                    const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                    setLastName(filtered);
+                  }}
+                />
+              </View>
             </View>
-
 
             {/* Correo  */}
-            <View style={styles.inputContainer} >
-              <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
-              <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                onFocus={() => handleFocus(emailAnim)}
-                placeholder=""
-                placeholderTextColor="#f0f0f0ff"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onBlur={() => {
-                  if (emailAnim && ! isValidEmailDomain(email)){
-                    setTypeMessage("error");
-                    setMessage("El dominio del correo no es válido")
-                  }
-                }}
-              />
-            </View>
+              <View style={styles.inputContainer} >
+                <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => handleFocus(emailAnim)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onBlur={() => {
+                    if (email && ! isValidEmailDomain(emailAnim)){
+                      setTypeMessage("error");
+                      setMessage("El dominio del correo no es válido")
+                    }
+                    handleBlur(emailAnim, email)
+                  }}
+                />
+              </View>
            
 
             {/* Contraseña */}
@@ -270,7 +274,7 @@ export default function SignUp({ navigation }) {
                 secureTextEntry={!showPassword}
                 placeholder=""
                 placeholderTextColor="#f0f0f0ff"
-              />
+              />      
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                 <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
               </TouchableOpacity>
