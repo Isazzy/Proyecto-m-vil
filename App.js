@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/config/firebaseConfig';
 import * as Font from "expo-font";
-import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 // Screens
 import Login from './screens/Login';
@@ -41,7 +39,13 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen">
+      
+      <Stack.Navigator initialRouteName="SplashScreen" 
+        screenOptions={{
+          mode: 'modal',
+          cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter
+        }
+        }>
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
