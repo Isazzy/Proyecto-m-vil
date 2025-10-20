@@ -83,10 +83,10 @@ export default function ForgotPasswordScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <Animated.View entering={FadeInDown.duration(800)} style={styles.formContainer}>
             
-            <Text style={styles.logoText}>Has olvidado tu contraseña</Text>
+            <Text style={styles.logoText}>¿Olvidaste tu contraseña?</Text>
 
             <Text style={styles.infoText}>
-              No te preocupes, introduce tu correo para recibir el enlace de recuperación.
+              Introduce tu correo para recibir el enlace de recuperación.
             </Text>
 
             {message && (
@@ -125,7 +125,7 @@ export default function ForgotPasswordScreen({ navigation }) {
             <Text style={styles.signupText}>
               ¿No tenés cuenta?
               <Text style={styles.link} onPress={() => navigation.navigate('SignUp')}>
-                {' '}Registrate ahora
+                {' '}Registrate 
               </Text>
             </Text>
 

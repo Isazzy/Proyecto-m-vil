@@ -11,6 +11,7 @@ import SignUp from './screens/SignUp';
 import Home from './screens/Home';
 import SplashScreen from './screens/SplashScreen';
 import ForgotPassword from './screens/ForgotPassword';
+import Perfil from './screens/Perfil';
 
 const Stack = createStackNavigator();
 
@@ -62,20 +63,30 @@ export default function App() {
           options={{
             headerTransparent: true,       
             headerTitle: "",                
-            headerTintColor: "#fff",      
+            headerTintColor: "#fff",
           }} 
         />
 
-        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="Home" 
+        component={Home} 
+        options={{headerShown: false}}
+        />
         <Stack.Screen 
           name="ForgotPassword" 
           component={ForgotPassword}
           options={{
             headerTransparent: true,       
             headerTitle: "",                
-            headerTintColor: "#fff",      
+            headerTintColor: "#fff",
           }} 
         />
+        <Stack.Screen 
+        name='Perfil'
+        component={Perfil}
+        options={{headerShown: false}}
+        />
+
+        
       </Stack.Navigator>
 
     </NavigationContainer>

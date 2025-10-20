@@ -292,13 +292,13 @@ export default function SignUp({ navigation }) {
                       <FontAwesome
                         name={passed ? "check-circle" : "times-circle"}
                         size={14}
-                        color={passed ? "#4CAF50" : "#a82284ff"}
+                        color={passed ? "#3a803cff" : "#a09898ff"}
                         style={{ marginRight: 6 }}
                       />
                       <Text
                         style={[
                           styles.ruleText,
-                          { color: passed ? "#4CAF50" : "#a82284ff" },
+                          { color: passed ? "#4CAF50" : "#a09898ff" },
                         ]}
                       >
                         {label}
@@ -327,6 +327,19 @@ export default function SignUp({ navigation }) {
                 <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
               </TouchableOpacity>
             </View>
+            {confirmPassword.length>0 && (
+              <Text
+                style={[
+                  styles.passwordMessage,
+                  confirmPassword === password
+                  ? styles.match : styles.noMatch
+                ]}
+                >
+                  {confirmPassword === password
+                  ? "Las contraseñas coinciden" : "Las contraseñas no coinciden"
+                  }
+                </Text>
+            )}
 
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Crear Cuenta</Text>
@@ -445,6 +458,8 @@ const styles = StyleSheet.create({
   },
   passwordRulesBox: {
     width: '70%',
+    marginTop:  -13,
+    marginBottom: height * 0.02,
   },
   ruleItem: {
     flexDirection: 'row',
@@ -452,6 +467,18 @@ const styles = StyleSheet.create({
   },
   ruleText: {
     fontSize: 10,
+  },
+  passwordMessage:{
+    fontSize: 13,
+    textAlign: "left",
+    marginTop: -13,
+    fontWeight: "bold",
+  },
+  match:{
+    color: "#3a803cff"
+  },
+  noMatch:{
+    color: "#ac0202ff"
   },
   message: {
     fontSize: width * 0.04,
