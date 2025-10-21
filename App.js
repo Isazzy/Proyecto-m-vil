@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/config/firebaseConfig';
 import * as Font from "expo-font";
-import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 // Screens
 import Perfil from './screens/Perfil'; // ajustá la ruta según tu estructura
@@ -14,6 +12,8 @@ import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
 import SplashScreen from './screens/SplashScreen';
+import ForgotPassword from './screens/ForgotPassword';
+import EditarPerfil from './screens/EditarPerfil';
 
 const Stack = createStackNavigator();
 
@@ -42,7 +42,13 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen">
+      
+      <Stack.Navigator initialRouteName="SplashScreen" 
+        screenOptions={{
+          mode: 'modal',
+          cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter
+        }
+        }>
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
@@ -59,21 +65,35 @@ export default function App() {
           options={{
             headerTransparent: true,       
             headerTitle: "",                
-            headerTintColor: "#fff",      
+            headerTintColor: "#fff",
           }} 
-/>
+        />
 
-        <Stack.Screen
-          name="Home"
-          component={Home}
+        <Stack.Screen name="Home" 
+        component={Home} 
+        options={{headerShown: false}}
+        />
+        <Stack.Screen 
+          name="ForgotPassword" 
+          component={ForgotPassword}
           options={{
             headerTransparent: true,       
             headerTitle: "",                
-            headerTintColor: "#fff",      
-          }}
-         />
-        <Stack.Screen name="Perfil" component={Perfil} />
+            headerTintColor: "#fff",
+          }} 
+        />
+        <Stack.Screen 
+        name='Perfil'
+        component={Perfil}
+        options={{headerShown: false}}
+        />
+        <Stack.Screen 
+        name='EditarPerfil'
+        component={EditarPerfil}
+        options={{headerShown: false}}
+        />
 
+        
       </Stack.Navigator>
 
     </NavigationContainer>

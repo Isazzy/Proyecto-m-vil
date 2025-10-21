@@ -10,16 +10,21 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Animated,
 } from 'react-native';
-
-
 import { FontAwesome } from '@expo/vector-icons';
 import { auth } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
 const backgroundImage = require("../assets/fondo.png");
+const allowedDomains = ["gmail.com", "hotmail.com", "yahoo.com"];
 
+const isValidEmailDomain = (email) => {
+  if (!email.includes("@")) return false;
+  const domain = email.trim().toLowerCase().split("@")[1];
+  return allowedDomains.includes(domain);
+};
 
 export default function SignUp({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -34,8 +39,49 @@ export default function SignUp({ navigation }) {
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
 
+  const firstAnim = useState(new Animated.Value(0))[0];
+  const lastAnim = useState(new Animated.Value(0))[0];
+  const emailAnim = useState(new Animated.Value(0))[0];
+  const passAnim = useState(new Animated.Value(0))[0];
+  const confirmAnim = useState(new Animated.Value(0))[0];
+
+  const handleFocus = (anim) => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const handleBlur = (anim, value) => {
+    if (!value) {
+      Animated.timing(anim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
+  const labelStyle = (anim) => ({
+    position: 'absolute',
+    left: 35,
+    top: anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [12, -10],
+    }),
+    fontSize: anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, 13],
+    }),
+    color: anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['#aaa', '#ff5b5b'],
+    }),
+  });
+
   const passwordRules = [
-    { rule: /.{8,}/, label: "Al menos 8 caracteres" },
+    { rule: /.{8,}/, label: "Al menos 8 carácteres" },
     { rule: /[A-Z]/, label: "Una letra mayúscula" },
     { rule: /[a-z]/, label: "Una letra minúscula" },
     { rule: /[0-9]/, label: "Un número" },
@@ -48,6 +94,8 @@ export default function SignUp({ navigation }) {
       setMessage(null);
     }
   }, [email, password, confirmPassword]);
+  
+  
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -56,19 +104,23 @@ export default function SignUp({ navigation }) {
       return;
     }
 
-        if (password !== confirmPassword) {
-            Alert.alert("Error", "Las contraseñas no coinciden.");
-            return;
-        }
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-        
-        if (!passwordRegex.test(password)) {
-            Alert.alert(
-                "Error",
-                "La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una minúscula y un número."
-            );
-            return;
-        }
+    if (!isValidEmailDomain(email)) {
+      setTypeMessage("error");
+      setMessage("El dominio del correo no es válido.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setTypeMessage("error");
+      setMessage("Las contraseñas no coinciden.");
+      return;
+    }
+
+    if (!passesAllRules(password)) {
+      setTypeMessage("error");
+      setMessage("La contraseña debe cumplir con los requisitos.");
+      return;
+    }
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
@@ -82,7 +134,7 @@ export default function SignUp({ navigation }) {
           errorMessage = "El correo electrónico ya está en uso.";
           break;
         case 'auth/invalid-email':
-          errorMessage = "El formato del correo electrónico no es válido.";
+          errorMessage = "El formato del correo electrónico no es válido:\n example@gmail.com";
           break;
         case 'auth/weak-password':
           errorMessage = "La contraseña es demasiado débil.";
@@ -96,18 +148,17 @@ export default function SignUp({ navigation }) {
     }
   };
 
-  // Colores dinámicos para los inputs
   const passwordBorderColor = password.length === 0
     ? '#FF5B5B'
     : passesAllRules(password)
       ? '#4CAF50'
-      : '#d61717';
+      : '#8d0000ff';
 
   const confirmPasswordBorderColor = confirmPassword.length === 0
     ? '#FF5B5B'
     : confirmPassword === password
       ? '#4CAF50'
-      : '#d61717';
+      : '#8d0000ff';
 
   return (
     <KeyboardAvoidingView
@@ -127,8 +178,8 @@ export default function SignUp({ navigation }) {
         <View style={styles.container}>
           <Text style={styles.title}>Regístrate</Text>
 
-          {/* Mensaje de error o éxito */}
-          <View style={{ height: height * 0.02, justifyContent: "center", flexDirection: 'row', marginBottom: height * 0.02 }}>
+          {/* Mensaje */}
+          <View style={{ height: height * 0.02, justifyContent: "center", flexDirection: 'row', marginBottom: height * 0.03 }}>
             {message && (
               <Text style={[
                 styles.message,
@@ -140,119 +191,155 @@ export default function SignUp({ navigation }) {
             )}
           </View>
 
-        <View style={styles.container2}>
+          <View style={styles.container2}>
             {/* Nombre */}
-            <View style={styles.inputContainer}>
+            <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom:height * 0.026}}>
+              <View style={[styles.inputContainer, {flex:1.1, marginRight: 8}]}>
+                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(firstAnim)}>Nombre</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onFocus={() => handleFocus(firstAnim)}
+                  onBlur={() => handleBlur(firstAnim, firstName)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  onChangeText={(text) => {
+                    // Solo letras (mayúsculas, minúsculas, acentos, ñ) y espacios
+                    const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                    setFirstName(filtered);
+                  }}
+                />
                 
-              <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Ingrese su nombre"
-                placeholderTextColor="#f0f0f0ff"
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
+              </View>
+            
 
             {/* Apellido */}
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Ingrese su apellido"
-                placeholderTextColor="#f0f0f0ff"
-                value={lastName}
-                onChangeText={setLastName}
-              />
+              <View style={[styles.inputContainer, {flex:1, marginLeft: 18}]}>
+                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(lastAnim)}>Apellido</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={lastName}
+                  onFocus={() => handleFocus(lastAnim)}
+                  onBlur={() => handleBlur(lastAnim, lastName)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  onChangeText={(text) => {
+                    const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
+                    setLastName(filtered);
+                  }}
+                />
+              </View>
             </View>
 
-            {/* Correo */}
-            <View style={styles.inputContainer}>
-              <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Ingrese su correo"
-                placeholderTextColor="#f0f0f0ff"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+            {/* Correo  */}
+            <View style={[styles, {marginTop: -height * 0.023}]}>
+              <View style={styles.inputContainer} >
+                <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
+                <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => handleFocus(emailAnim)}
+                  placeholder=""
+                  placeholderTextColor="#f0f0f0ff"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onBlur={() => {
+                    if (email && ! isValidEmailDomain(email)){
+                      setTypeMessage("error");
+                      setMessage("El dominio del correo no es válido")
+                    }
+                    handleBlur(emailAnim, email)
+                  }}
+                />
+              </View>
             </View>
 
             {/* Contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: passwordBorderColor, borderBottomWidth: 2 }]}>
               <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+              <Animated.Text style={labelStyle(passAnim)}>Contraseña</Animated.Text>
               <TextInput
                 style={styles.input}
-                placeholder="Ingrese su contraseña"
-                placeholderTextColor="#f0f0f0ff"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
                   if (!passwordTouched) setPasswordTouched(true);
                 }}
+                onFocus={() => { handleFocus(passAnim); setPasswordFocused(true); }}
+                onBlur={() => { handleBlur(passAnim, password); setPasswordFocused(false); }}
                 secureTextEntry={!showPassword}
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
-              />
+                placeholder=""
+              />      
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome
-                  name={showPassword ? "eye-slash" : "eye"}
-                  size={20}
-                  color="#e6e9dbff"
-                />
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
               </TouchableOpacity>
             </View>
 
             {/* Reglas de contraseña */}
             {passwordTouched && !passesAllRules(password) && passwordFocused && (
-                <View style={styles.passwordRulesBox}>
-                <Text style={{ fontWeight: 'bold', color:"#f1e6e6ff", }}>
-                    La contraseña debe tener:
+              <View style={styles.passwordRulesBox}>
+                <Text style={{ fontWeight: 'bold', color: "#f1e6e6ff" }}>
+                  La contraseña debe tener:
                 </Text>
                 {passwordRules.map(({ rule, label }, index) => {
-                    const passed = rule.test(password);
-                    return (
+                  const passed = rule.test(password);
+                  return (
                     <View key={index} style={styles.ruleItem}>
-                        <FontAwesome
+                      <FontAwesome
                         name={passed ? "check-circle" : "times-circle"}
-                        size={16}
-                        color={passed ? "#4CAF50" : "#d61717ff"}
-                        style={{ marginRight: 8 }}
-                        />
-                        <Text
+                        size={14}
+                        color={passed ? "#3a803cff" : "#a09898ff"}
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text
                         style={[
-                            styles.ruleText,
-                            { color: passed ? "#4CAF50" : "#d61717ff" },
+                          styles.ruleText,
+                          { color: passed ? "#4CAF50" : "#a09898ff" },
                         ]}
-                        >
+                      >
                         {label}
-                        </Text>
+                      </Text>
                     </View>
-                    );
+                  );
                 })}
-                </View>
+              </View>
             )}
+
             {/* Confirmar contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: confirmPasswordBorderColor, borderBottomWidth: 2 }]}>
               <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+              <Animated.Text style={labelStyle(confirmAnim)}>Confirmar contraseña</Animated.Text>
               <TextInput
                 style={styles.input}
-                placeholder="Confirme su contraseña"
-                placeholderTextColor="#f0f0f0ff"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
+                onFocus={() => handleFocus(confirmAnim)}
+                onBlur={() => handleBlur(confirmAnim, confirmPassword)}
                 secureTextEntry={!showConfirmPassword}
+                placeholder=""
+                placeholderTextColor="#f0f0f0ff"
               />
               <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <FontAwesome
-                  name={showConfirmPassword ? "eye-slash" : "eye"}
-                  size={20}
-                  color="#e6e9dbff"
-                />
+                <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
               </TouchableOpacity>
             </View>
+            {confirmPassword.length>0 && (
+              <Text
+                style={[
+                  styles.passwordMessage,
+                  confirmPassword === password
+                  ? styles.match : styles.noMatch
+                ]}
+                >
+                  {confirmPassword === password
+                  ? "Las contraseñas coinciden" : "Las contraseñas no coinciden"
+                  }
+                </Text>
+            )}
 
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Crear Cuenta</Text>
@@ -271,15 +358,13 @@ export default function SignUp({ navigation }) {
 
           <View style={styles.LoginContainer}>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.LoginText}>¿Ya tenes una cuenta?
+              <Text style={styles.LoginText}>¿Ya tenés una cuenta?
                 <Text style={{ color: "#ff5b5b" }}>  Iniciar sesión </Text>
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
-
-     
     </KeyboardAvoidingView>
   );
 }
@@ -288,7 +373,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent:"center",
+    justifyContent: "center",
     paddingHorizontal: width * 0.08,
     paddingVertical: height * 0.01,
   },
@@ -309,14 +394,13 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#181515ff",
     paddingVertical: height * 0.03,
-    
   },
   title: {
     color: "#fff",
     fontSize: width * 0.1,
     fontWeight: 'bold',
     marginTop: height * 0.02,
-    marginBottom: height * 0.00,
+    marginBottom: height * 0.026,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -324,6 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.026,
     borderBottomWidth: 2,
     borderColor: '#ff5b5b',
+    position: 'relative',
   },
   icon: {
     marginRight: 10,
@@ -373,23 +458,46 @@ const styles = StyleSheet.create({
   },
   passwordRulesBox: {
     width: '70%',
+    marginTop:  -13,
+    marginBottom: height * 0.02,
   },
   ruleItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   ruleText: {
-    fontSize: 14,
+    fontSize: 10,
+  },
+  passwordMessage:{
+    fontSize: 13,
+    textAlign: "left",
+    marginTop: -13,
+    fontWeight: "bold",
+  },
+  match:{
+    color: "#3a803cff"
+  },
+  noMatch:{
+    color: "#ac0202ff"
   },
   message: {
     fontSize: width * 0.04,
     textAlign: "center",
+    marginBottom: height * 0.1,
     position: "absolute",
   },
   errorMessage: {
     color: "#ff5b5b",
+     marginBottom: height * 0.1,
+    
   },
   successMessage: {
     color: "#4CAF50",
+     marginBottom: height * 0.1,
   },
+  LoginContainer: {
+  marginTop: height * 0.02,
+  alignItems: 'center',
+}
+
 });

@@ -107,7 +107,6 @@ export default function Home({ navigation }) {
   const profileLeftCandidate = profileCenterX - PROFILE_MENU_WIDTH / 2;
   const profileMenuLeft = Math.max(10, Math.min(profileLeftCandidate, screenWidth - PROFILE_MENU_WIDTH - 10));
 
-  const onGoPerfil = useCallback(() => { setProfileMenuOpen(false); navigation.navigate('Perfil'); }, [navigation]);
   const onGoSettings = useCallback(() => { setProfileMenuOpen(false); navigation.navigate('Configuracion'); }, [navigation]);
   const onGoAyuda = useCallback(() => { setProfileMenuOpen(false); navigation.navigate('Ayuda'); }, [navigation]);
   const onLogoutFromMenu = useCallback(() => { setProfileMenuOpen(false); handleLogout(); }, [handleLogout]);
@@ -163,14 +162,14 @@ export default function Home({ navigation }) {
   const openNotif = useCallback(() => setNotifOpen(true), []);
   const closeNotif = useCallback(() => setNotifOpen(false), []);
 
-  // Body: grid responsivo + refresh
+  
   const GAP = 12;
   const NUM_COLS = 2;
   const CARD_WIDTH = Math.floor((screenWidth - (GAP * (NUM_COLS + 1))) / NUM_COLS);
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800); // stub: conectá a tu fetch real
+    setTimeout(() => setRefreshing(false), 800); 
   }, []);
 
   const renderItem = ({ item }) => (
@@ -204,7 +203,7 @@ export default function Home({ navigation }) {
           <Text numberOfLines={2} style={styles.saludoTexto}>
             {user ? `Hola,\n${user.displayName?.split(' ')[0] || user.email?.split('@')[0]}!` : '¡Bienvenida/o!'}
           </Text>
-          <Text style={styles.subtituloHeader}>Panel de Administración</Text>
+          
         </View>
 
         {/* Campana de Notificaciones */}
@@ -224,7 +223,7 @@ export default function Home({ navigation }) {
           )}
         </Pressable>
 
-        {/* Foto usuario (tap: Perfil, long press: Configuración) */}
+        
         <Pressable
           style={styles.imagenContainer}
           onPress={() => navigation.navigate('Perfil')}
@@ -244,7 +243,7 @@ export default function Home({ navigation }) {
       <View style={styles.body}>
         {loading ? (
           <View style={[styles.center, { paddingTop: 24 }]}>
-            <ActivityIndicator size="large" color="#007AFF" />
+            <ActivityIndicator size="large" color="#ceebb3ff" />
             <Text style={styles.loadingText}>Cargando...</Text>
           </View>
         ) : error ? (
@@ -279,32 +278,6 @@ export default function Home({ navigation }) {
         )}
       </View>
 
-      {/* Bottom Nav */}
-      <View
-        style={styles.bottomNav}
-        onLayout={(e) => setBottomNavHeight(e.nativeEvent.layout.height)}
-      >
-        <Pressable style={styles.navItem} onPress={() => {}} accessibilityRole="button" accessibilityLabel="Inicio">
-          <Ionicons name="home-outline" size={24} color="#007AFF" />
-          <Text style={[styles.navText, styles.activeText]}>Inicio</Text>
-        </Pressable>
-
-        {/* Perfil (SIN notificaciones en el menú) */}
-        <Pressable
-          style={styles.navItem}
-          onPress={
-            Platform.OS === 'ios'
-              ? openIOSActionSheet
-              : (profileMenuOpen ? () => setProfileMenuOpen(false) : () => setProfileMenuOpen(true))
-          }
-          onLayout={(e) => setProfileAnchor(e.nativeEvent.layout)}
-          accessibilityRole="button"
-          accessibilityLabel="Perfil"
-        >
-          <Ionicons name="person-outline" size={24} color="gray" />
-          <Text style={styles.navText}>Perfil</Text>
-        </Pressable>
-      </View>
 
       {/* ===== Overlay + Menú de Notificaciones (HEADER) ===== */}
       <Animated.View
@@ -388,7 +361,7 @@ export default function Home({ navigation }) {
             ]}
           >
             <View style={styles.profileMenu}>
-              <MenuItem icon="person-circle-outline" label="Ver perfil" onPress={onGoPerfil} />
+              <MenuItem icon="person-circle-outline" label="Ver perfil" onPress={() => navigation.navigate ("Perfil")} />
               <MenuItem icon="settings-outline" label="Configuración" onPress={onGoSettings} />
               <MenuItem icon="help-circle-outline" label="Ayuda" onPress={onGoAyuda} />
               <View style={styles.separator} />
@@ -429,7 +402,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#2a2a2a',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerLeft: { flex: 1, paddingRight: 8 },
+  headerLeft: { flex: 1, paddingRight: 8, paddingTop: 30 },
   saludoTexto: { fontSize: 22, fontWeight: '800', color: '#fff', lineHeight: 26 },
   subtituloHeader: { fontSize: 13, color: '#9a9a9a', marginTop: 2 },
 
@@ -453,7 +426,7 @@ const styles = StyleSheet.create({
   imagenUsuario: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: '#3a3a3a' },
 
   // Body
-  body: { flex: 1, backgroundColor: '#121212', paddingTop: 10, paddingBottom: 90 },
+  body: { flex: 1, backgroundColor: '#121212', paddingTop: 10, paddingBottom: 20 },
   tituloBody: { fontSize: 18, fontWeight: '700', color: '#fff', paddingHorizontal: 12, marginBottom: 6 },
   grid: { paddingHorizontal: 10, paddingBottom: 20 },
 
@@ -483,13 +456,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#1c1c1e',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#2a2a2a',
+    borderTopColor: '#000000ff',
     paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-    paddingTop: 8,
+    paddingTop: 10,
+    
   },
-  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', 
+
+   },
   navText: { fontSize: 10, marginTop: 2, color: '#eaeaea', fontWeight: '500' },
-  activeText: { color: '#0a84ff' },
+  activeText: { color: '#cb7171ff' },
 
   // Estados
   center: { alignItems: 'center', justifyContent: 'center' },
@@ -559,4 +535,5 @@ const styles = StyleSheet.create({
   notifItemBody: { color: '#ddd', fontSize: 12, marginTop: 2 },
   notifTime: { color: '#aaa', fontSize: 11, marginTop: 6, textAlign: 'right' },
 });
+
 
