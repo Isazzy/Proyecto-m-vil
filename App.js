@@ -8,6 +8,8 @@ import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // Screens
+import Perfil from './screens/Perfil'; // ajustá la ruta según tu estructura
+
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
@@ -61,7 +63,17 @@ export default function App() {
           }} 
 />
 
-        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{
+            headerTransparent: true,       
+            headerTitle: "",                
+            headerTintColor: "#fff",      
+          }}
+         />
+        <Stack.Screen name="Perfil" component={Perfil} />
+
       </Stack.Navigator>
 
     </NavigationContainer>
