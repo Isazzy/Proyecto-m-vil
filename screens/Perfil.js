@@ -89,8 +89,9 @@ export default function Profile({ navigation }) {
   };
 
   const options = [
+    { icon: 'pencil', text: 'Editar Perfil' },
     { icon: 'bell', text: 'Notificaciones' },
-    { icon: 'accessibility', text: 'Accesibilidad' },
+    { icon: 'a', text: 'Accesibilidad' },
     { icon: 'lock', text: 'Cambiar Contraseña' },
   ];
 
