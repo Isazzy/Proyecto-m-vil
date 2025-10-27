@@ -14,6 +14,7 @@ import Home from './screens/Home';
 import SplashScreen from './screens/SplashScreen';
 import ForgotPassword from './screens/ForgotPassword';
 import EditarPerfil from './screens/EditarPerfil';
+import ChangePasswordForm from './screens/ChangePasswordForm';
 
 const Stack = createStackNavigator();
 
@@ -71,7 +72,8 @@ export default function App() {
 
         <Stack.Screen name="Home" 
         component={Home} 
-        options={{headerShown: false}}
+        options={{headerShown: false,
+        }}
         />
         <Stack.Screen 
           name="ForgotPassword" 
@@ -93,6 +95,11 @@ export default function App() {
         options={{headerShown: false}}
         />
 
+          <Stack.Screen 
+        name='ChangePasswordForm'
+        component={ChangePasswordForm}
+        options={{headerShown: false}}
+        />
         
       </Stack.Navigator>
 
