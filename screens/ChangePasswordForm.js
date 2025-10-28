@@ -32,11 +32,7 @@ export default function ChangePasswordForm({ setShowModal }) {
       setLoading(true);
       const user = auth.currentUser;
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
-
-      // Reautenticación segura
       await reauthenticateWithCredential(user, credential);
-
-      // Actualizar contraseña
       await updatePassword(user, newPassword);
 
       // Cerrar sesión para evitar token viejo

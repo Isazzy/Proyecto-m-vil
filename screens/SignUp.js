@@ -105,7 +105,7 @@ export default function SignUp({ navigation }) {
 
     if (!isValidEmailDomain(email)) {
       setTypeMessage("error");
-      setMessage("El dominio del correo no es válido.");
+      setMessage("Formato de correo inválido.");
       return;
     }
 

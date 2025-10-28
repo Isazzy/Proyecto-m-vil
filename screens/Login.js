@@ -81,7 +81,7 @@ export default function Login({ navigation }) {
       setMessage("Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (error) {
-      let errorMessage = "Correo y/o contraseña incorrectas.";
+      let errorMessage = "Correo y/o contraseña incorrecto.";
       switch (error.code) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido.";
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   fondo:{
 
     width: width *1.1 ,
-    height:height*0.3,//esta es la imagen
+    height:height*0.3,
   },
   title: {
     fontFamily: 'GreatVibes',
