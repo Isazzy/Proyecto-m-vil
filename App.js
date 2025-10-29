@@ -15,6 +15,12 @@ import SplashScreen from './screens/SplashScreen';
 import ForgotPassword from './screens/ForgotPassword';
 import EditarPerfil from './screens/EditarPerfil';
 import ChangePasswordForm from './screens/ChangePasswordForm';
+import Productos from './screens/Productos';
+import DrawerNavigator from './screens/DrawerNavigator';
+import AgregarProducto from './screens/AgregarProducto';
+import EditarProducto from './screens/EditarProducto';
+import VerProducto from './screens/VerProducto';
+
 
 const Stack = createStackNavigator();
 
@@ -101,7 +107,20 @@ export default function App() {
         options={{headerShown: false}}
         />
         
+        <Stack.Screen name="Productos" component={Productos} options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="DrawerNavigator"
+          component={DrawerNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="AgregarProducto" component={AgregarProducto} />
+        <Stack.Screen name="EditarProducto" component={EditarProducto} />
+        <Stack.Screen name="VerProducto" component={VerProducto} />
+
       </Stack.Navigator>
+        
+
 
     </NavigationContainer>
   );
