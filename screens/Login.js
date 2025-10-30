@@ -1,3 +1,5 @@
+//screens/Login.js
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -94,11 +96,9 @@ export default function Login({ navigation }) {
       const user = userCredential.user;
 
       if (remember) {
-        await AsyncStorage.setItem("email", email);
-        await AsyncStorage.setItem("password", password);
+        await AsyncStorage.setItem('email', email);
       } else {
-        await AsyncStorage.removeItem("email");
-        await AsyncStorage.removeItem("password");
+        await AsyncStorage.removeItem('email');
       }
 
       setMessage("Has iniciado sesión correctamente.");

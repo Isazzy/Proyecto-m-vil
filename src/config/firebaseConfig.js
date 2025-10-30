@@ -1,39 +1,57 @@
 // src/config/firebaseConfig.js
+
+
+import { Platform } from 'react-native';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence, getAuth } from 'firebase/auth';
+import {
+  initializeAuth,
+  getReactNativePersistence,
+  getAuth,
+  // setLogLevel, // opcional para debug
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-     // Tu configuración de Firebase (reemplaza con la tuya real)
-     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4vl9Y8KJHAh6uGgv6U6N2JGkF0eXpRqQ",
-      authDomain: "mobileapp-efd20.firebaseapp.com",
-      projectId: "mobileapp-efd20",
-      storageBucket: "mobileapp-efd20.firebasestorage.app",
-      messagingSenderId: "330520281855",
-      appId: "1:330520281855:web:daca5f61f0127be22bc2ca",
-      measurementId: "G-PTLCF2XTNE"
-    };
+// ⚠️ Reemplazá solo si corresponde. Para SDK v9, el bucket va con appspot.com
+const firebaseConfig = {
+  apiKey: 'AIzaSyD4vl9Y8KJHAh6uGgv6U6N2JGkF0eXpRqQ',
+  authDomain: 'mobileapp-efd20.firebaseapp.com',
+  projectId: 'mobileapp-efd20',
+  storageBucket: 'mobileapp-efd20.appspot.com', // <- corregido
+  messagingSenderId: '330520281855',
+  appId: '1:330520281855:web:daca5f61f0127be22bc2ca',
+  measurementId: 'G-PTLCF2XTNE', // no afecta RN; no molesta
+};
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Aseguramos una sola app
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const auth = getApps().length === 0
-  ? initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) })
-  : getAuth(app);
-
+// RN: usar initializeAuth con persistencia. Web: getAuth normal.
+let auth;
+if (Platform.OS === 'web') {
+  auth = getAuth(app);
+} else {
+  // Intentá inicializar Auth con persistencia (solo 1 vez).
+  try {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } catch (e) {
+    // Si ya existía un Auth inicializado, usamos el existente
+    auth = getAuth(app);
+  }
+}
 
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export { auth, db, storage };
+export { app, auth, db, storage };
 
 
 
 
 
 
-     // Agrega esto para debug: Verifica que auth esté definido
-     console.log('Firebase inicializado correctamente. Auth:', auth ? 'OK' : 'ERROR');
+
      
