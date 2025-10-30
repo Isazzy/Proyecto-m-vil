@@ -1,8 +1,6 @@
 {
   "expo": {
     "name": "mobileStart",
-    "slug": "mobileStart",
-    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/fondocortina.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -26,7 +24,9 @@
     "web": {
       "viewport": "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
       "favicon": "./assets/favicon.png"
-      
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
