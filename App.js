@@ -7,12 +7,21 @@ import { auth } from './src/config/firebaseConfig';
 import * as Font from "expo-font";
 
 // Screens
+import Perfil from './screens/Perfil'; // ajustá la ruta según tu estructura
+
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
 import SplashScreen from './screens/SplashScreen.js';
 import ForgotPassword from './screens/ForgotPassword';
-import Perfil from './screens/Perfil';
+import EditarPerfil from './screens/EditarPerfil';
+import ChangePasswordForm from './screens/ChangePasswordForm';
+import Productos from './screens/Productos';
+import DrawerNavigator from './screens/DrawerNavigator';
+import AgregarProducto from './screens/AgregarProducto';
+import EditarProducto from './screens/EditarProducto';
+import VerProducto from './screens/VerProducto';
+
 
 const Stack = createStackNavigator();
 // Obtén el tamaño de la pantalla (se actualiza en orientación changes)
@@ -86,7 +95,8 @@ export default function App() {
 
         <Stack.Screen name="Home" 
         component={Home} 
-        options={{headerShown: false}}
+        options={{headerShown: false,
+        }}
         />
         <Stack.Screen 
           name="ForgotPassword" 
@@ -102,12 +112,36 @@ export default function App() {
         component={Perfil}
         options={{headerShown: false}}
         />
+        <Stack.Screen 
+        name='EditarPerfil'
+        component={EditarPerfil}
+        options={{headerShown: false}}
+        />
 
+          <Stack.Screen 
+        name='ChangePasswordForm'
+        component={ChangePasswordForm}
+        options={{headerShown: false}}
+        />
         
+        <Stack.Screen name="Productos" component={Productos} options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="DrawerNavigator"
+          component={DrawerNavigator}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="AgregarProducto" component={AgregarProducto} />
+        <Stack.Screen name="EditarProducto" component={EditarProducto} />
+        <Stack.Screen name="VerProducto" component={VerProducto} />
+
       </Stack.Navigator>
+        
+
 
     </NavigationContainer>
   );
 }
 
 
+// App.js

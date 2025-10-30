@@ -1,133 +1,136 @@
-// Profile.jsx (componente completo - reemplaza tu versión)
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Image,
+  Modal,
+  ScrollView,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  PanResponder,
+  Animated,
+} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as ImagePicker from 'expo-image-picker';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '../src/config/firebaseConfig';
-import { updateProfile, signOut } from 'firebase/auth';
+import AnimatedReanimated, { FadeInDown } from 'react-native-reanimated';
+import { auth, firestore } from '../src/config/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import ChangePasswordForm from './ChangePasswordForm';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
-const CLOUD_NAME = 'diqndk92p'; 
-const UPLOAD_PRESET = 'mitiempo_mobile'; 
-
 export default function Profile({ navigation }) {
-  const [user, loadingUser, errorUser] = useAuthState(auth);
-  const [uploading, setUploading] = useState(false);
-  const [localImage, setLocalImage] = useState(null); 
+  const [userData, setUserData] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const slideAnim = useRef(new Animated.Value(0)).current; // para animar arrastre
 
-
-  const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
-
-      if (result.canceled) return;
-      const uri = result.assets[0].uri;
-      setLocalImage(uri);
-      
-    } catch (e) {
-      console.log('pickImage error', e);
-      Alert.alert('Error', 'No se pudo seleccionar la imagen.');
-    }
-  };
-
-  const uploadImage = async (uri) => {
-    setUploading(true);
-    try {
-      const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
-      const uriParts = uri.split('/');
-      const fileName = uriParts[uriParts.length - 1];
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        type: uriToFileType(uri),
-        name: fileName,
-      });
-      formData.append('upload_preset', UPLOAD_PRESET)
-
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        body: formData,
-        headers: {
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        console.log('Cloudinary error', data);
-        throw new Error(data?.error?.message || 'Error subiendo imagen');
+  useEffect(() => {
+    const cargarUsuario = async () => {
+      if (!auth.currentUser) return;
+      try {
+        const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) setUserData(docSnap.data());
+      } catch (error) {
+        console.log('Error cargando info usuario:', error);
       }
+    };
+    cargarUsuario();
+  }, []);
 
-      const secureUrl = data.secure_url;
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { photoURL: secureUrl });
-      }
-    } catch (err) {
-      console.log('uploadImage error', err);
-      Alert.alert('Error al subir', err.message || 'Intenta nuevamente.');
-    } finally {
-      setUploading(false);
-    }
-  };
+  // === PanResponder para permitir arrastrar hacia abajo ===
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          slideAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120) {
+          // si arrastra más de 120px, cerrar modal
+          Animated.timing(slideAnim, {
+            toValue: height,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowPasswordModal(false);
+            slideAnim.setValue(0);
+          });
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      navigation.replace('Login');
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo cerrar sesión.');
-    }
+  const handleCloseModal = () => {
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowPasswordModal(false);
+      slideAnim.setValue(0);
+    });
   };
 
   const options = [
+    { icon: 'pencil', text: 'Editar Perfil', action: () => navigation.navigate('EditarPerfil') },
     { icon: 'bell', text: 'Notificaciones' },
-    { icon: 'accessibility', text: 'Accesibilidad' },
-    { icon: 'lock', text: 'Cambiar Contraseña' },
+    { icon: 'universal-access', text: 'Accesibilidad' },
+    { icon: 'lock', text: 'Cambiar Contraseña', action: () => setShowPasswordModal(true) },
+    { icon: 'cog', text: 'Configuración' },
+    { icon: 'question-circle', text: 'Ayuda' },
   ];
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          <Animated.Image
-            entering={FadeInDown.duration(1000)}
-            source={require('../assets/fondoPerfil.jpg')}
-            style={styles.fondo}
+        <AnimatedReanimated.Image
+          entering={FadeInDown.duration(1000)}
+          source={require('../assets/fondoPerfil.jpg')}
+          style={styles.fondo}
+        />
+
+        <View style={styles.header}>
+          <Image
+            source={{ uri: userData?.photoURL || 'https://via.placeholder.com/150' }}
+            style={styles.profileImage}
           />
+          <Text style={styles.name}>
+            {userData?.nombre || ''} {userData?.apellido || ''}
+          </Text>
+          <Text style={styles.email}>{auth.currentUser?.email || '-'}</Text>
         </View>
 
-        <Animated.View entering={FadeInDown.duration(1200)} style={styles.header}>
-          <TouchableOpacity onPress={pickImage} disabled={uploading}>
-            <Image
-              source={{ uri: localImage || user?.photoURL || 'https://via.placeholder.com/150' }}
-              style={styles.profileImage}
-            />
-            {uploading && (
-              <View style={styles.overlayUploading}>
-                <ActivityIndicator size="small" />
-              </View>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.headerLeft}>
-            <Text numberOfLines={2} style={styles.name}>
-              {user ? `${user.displayName?.split(' ')[0] || user.email?.split('@')[0]}` : ''}
-            </Text>
-          </View>
-        </Animated.View>
+        <View style={styles.body}>
+          <LinearGradient
+            colors={['#f77f83ff', '#f6416c', '#43073dff']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.card}
+          />
+          <Text style={styles.infoText}>Teléfono: {userData?.telefono || ''}</Text>
+          <Text style={styles.infoText}>Edad: {userData?.edad || ''}</Text>
+          <Text style={styles.infoText}>Sexo: {userData?.sexo || ''}</Text>
+          <Text style={styles.infoText}>
+            Fecha de nacimiento:{' '}
+            {userData?.fechaNacimiento?.toDate
+              ? userData.fechaNacimiento.toDate().toLocaleDateString('es-ES')
+              : ''}
+          </Text>
+        </View>
 
         <View style={styles.optionsContainer}>
           {options.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.option}>
+            <TouchableOpacity key={index} style={styles.option} onPress={item.action}>
               <View style={styles.optionLeft}>
                 <FontAwesome name={item.icon} size={20} color="#ff5b5b" />
                 <Text style={styles.optionText}>{item.text}</Text>
@@ -137,13 +140,36 @@ export default function Profile({ navigation }) {
           ))}
         </View>
 
-        <TouchableOpacity
-          style={styles.signOutButton}
-          onPress={handleSignOut}
+        <View style={styles.containerBottom}>
+          <TouchableOpacity style={styles.button1} onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.buttonText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* === MODAL === */}
+        <Modal
+          visible={showPasswordModal}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={handleCloseModal}
         >
-          <FontAwesome name="sign-out" size={18} color="#fff" />
-          <Text style={styles.signOutText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={handleCloseModal}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <Animated.View
+                  style={[
+                    styles.modalContent,
+                    { transform: [{ translateY: slideAnim }] },
+                  ]}
+                  {...panResponder.panHandlers}
+                >
+                  <View style={styles.dragIndicator} />
+                  <ChangePasswordForm setShowModal={setShowPasswordModal} />
+                </Animated.View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -155,46 +181,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: width * 0.08,
     paddingVertical: height * 0.04,
-    backgroundColor: '#181515ff',
-  },
-  imageContainer: {
-    position: 'absolute',
-    top: 0,
-    opacity: 0.2,
-    overflow: 'hidden',
+    backgroundColor: '#131111ff',
   },
   fondo: {
+    position: 'absolute',
     width: width * 1.1,
     height: height * 0.3,
+    opacity: 0.2,
   },
-  header: {
-    alignItems: 'center',
-    marginTop: height * 0.03,
-    marginBottom: height * 0.04,
-  },
+  header: { alignItems: 'center', marginBottom: 20 },
   profileImage: {
-    width: 110,
-    height: 110,
+    width: 120,
+    height: 120,
     borderRadius: 60,
     borderWidth: 2,
-    marginBottom: 1,
+    borderColor: '#9c6e6eff',
+    marginBottom: 8,
   },
-  overlayUploading: {
-    position: 'absolute',
-    left: 0, right: 0, top: 0, bottom: 0,
-    alignItems: 'center', justifyContent: 'center',
+  name: { color: '#fb5b5b', fontSize: width * 0.06, fontWeight: 'bold' },
+  email: { color: '#9c6e6eff', fontSize: width * 0.04, marginBottom: 10 },
+  body: {
+    backgroundColor: '#131111ff',
+    opacity: 0.9,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 1,
+    alignSelf: 'center',
   },
-  name: {
-    color: '#fff',
-    fontSize: width * 0.06,
-    fontWeight: 'bold',
-  },
+  infoText: { color: '#fff', fontSize: width * 0.045, marginBottom: 8 },
   optionsContainer: {
-    backgroundColor: '#242121',
+    backgroundColor: '#131111ff',
     borderRadius: 16,
     width: '100%',
     paddingVertical: 5,
-    marginBottom: 25,
   },
   option: {
     flexDirection: 'row',
@@ -203,31 +223,38 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 18,
     borderBottomWidth: 0.3,
-    borderBottomColor: '#333',
+    borderBottomColor: '#b6cfe0ff',
   },
-  optionLeft: {
-    flexDirection: 'row',
+  optionLeft: { flexDirection: 'row', alignItems: 'center' },
+  optionText: { color: '#fff', fontSize: width * 0.045, marginLeft: 14 },
+  card: { padding: 1, borderRadius: 20, width: width * 0.6 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  containerBottom: { flexDirection: 'row', justifyContent: 'space-between' },
+  button1: {
+    backgroundColor: '#413939ff',
+    borderRadius: 10,
     alignItems: 'center',
+    padding: 10,
+    width: 150,
   },
-  optionText: {
-    color: '#fff',
-    fontSize: width * 0.045,
-    marginLeft: 14,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
   },
-  signOutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ff5b5b',
-    paddingVertical: height * 0.018,
-    borderRadius: 50,
-    width: '100%',
-    marginTop: height * 0.02,
+  modalContent: {
+    backgroundColor: '#181515ff',
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    minHeight: 400,
   },
-  signOutText: {
-    color: '#fff',
-    fontSize: width * 0.045,
-    fontWeight: '500',
-    marginLeft: 8,
+  dragIndicator: {
+    width: 60,
+    height: 5,
+    backgroundColor: '#666',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 });
