@@ -3,8 +3,9 @@ import {
   View, Text, FlatList, StyleSheet, ActivityIndicator,
   TouchableOpacity, Alert, RefreshControl,
   Image, 
-  SafeAreaView, // --- NUEVO ---
-  StatusBar, // --- NUEVO ---
+  SafeAreaView, 
+  StatusBar, 
+  Pressable, 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
@@ -13,20 +14,18 @@ import { db } from '../src/config/firebaseConfig';
 // --- NUEVA PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
-  superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
-  textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
-  textoSecundario: '#A0A0A0', // Gris neutral
+  superficie: '#190101', 
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
   
   acentoPrincipal: '#FB5B5B', // Tu color
-  acentoAzul: '#5B5BFB',     // Triádica
+  acentoAzul: '#6ba1c1ff',     // Triádica
   acentoVerde: '#5BFB5B',   // Triádica
 };
 
-const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje'];
+const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros']; // Añadido 'Otros'
 
-// --- Componente de Card (Rediseñado) ---
 const ProductoCard = ({ item, navigation, onEliminar }) => {
-  
   const handleVer = () => navigation.navigate('VerProducto', { item });
   const handleEditar = () => navigation.navigate('EditarProducto', { item });
 
@@ -71,15 +70,11 @@ const ProductoCard = ({ item, navigation, onEliminar }) => {
   );
 };
 
-
-// --- Componente Principal ---
-export default function Productos({ navigation }) {
+export default function Productos({ navigation }) { 
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
-
-  // (Lógica de fetchProductos, useEffect, onRefresh, handleEliminar se mantiene igual)
   const fetchProductos = useCallback(async () => {
     try {
       if (!refreshing) setLoading(true);
@@ -129,14 +124,17 @@ export default function Productos({ navigation }) {
       : productos.filter(p => p.tipo === tipoFiltro);
 
   return (
-    // --- CAMBIO: Contenedor principal ---
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
-
-      {/* Título de la Sección */}
-      <Text style={styles.titulo}>Productos</Text>
-
-      {/* Filtros (Usando FlatList horizontal para mejor UI) */}
+      <View style={styles.header}>
+        <Pressable
+          style={styles.iconBtn}
+          onPress={() => navigation.openDrawer()} 
+        >
+          <Ionicons name="menu-sharp" size={26} color={COLORES.textoSecundario} />
+        </Pressable>
+        <Text style={styles.titulo}>Productos</Text>
+      </View>
       <View>
         <FlatList
           data={tipos}
@@ -164,8 +162,6 @@ export default function Productos({ navigation }) {
           )}
         />
       </View>
-
-      {/* Botón agregar (CTA Principal) */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AgregarProducto')}
@@ -213,13 +209,23 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: COLORES.fondo, // Negro sólido
   },
-  titulo: { 
-    fontSize: 22, // Coherente con Home
-    fontWeight: 'bold', 
-    color: COLORES.textoPrincipal, 
+  // --- NUEVO HEADER ---
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 16, // Espacio superior
-    paddingBottom: 16,
+    paddingBottom: 0, // El título ya tiene padding
+  },
+  iconBtn: {
+    padding: 4,
+    marginRight: 15, // Espacio entre el icono y el título
+  },
+  titulo: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: COLORES.textoPrincipal, 
+    paddingVertical: 16, // Padding vertical
   },
   // --- Estilos de Filtros (Rediseñados) ---
   filtrosContainer: {

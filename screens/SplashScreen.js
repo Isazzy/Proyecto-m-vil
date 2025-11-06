@@ -1,152 +1,119 @@
-import React from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
-import Animated, { FadeInDown, FadeInLeft, FadeInUp } from "react-native-reanimated";
+import React, { useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Dimensions, 
+  StatusBar,
+  ImageBackground
+} from 'react-native';
+// --- CAMBIO: Importamos 'FadeIn' para el texto 'MI TIEMPO' ---
+import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
-
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', 
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
+};
 
 export default function SplashScreen({ navigation }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigation.replace("Login"); 
+    }, 4000); 
+    return () => clearTimeout(timer); 
+  }, [navigation]);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Animated.Image
-          entering={FadeInUp.delay(400).duration(2000).springify()}
-          source={require("../assets/fondo.png")}
-          style={styles.fondo}
-        />
+    <ImageBackground
+      source={require('../assets/Splash.png')} 
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.contentOverlay}> 
+        <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+        <View style={styles.contentContainer}>
+          <View style={styles.contentContainer1}>
+            <Animated.Text
+              entering={FadeInUp.delay(500).duration(1200)}
+              style={styles.logo}
+            >
+              Romina
+            </Animated.Text>
+            <Animated.Text
+              entering={FadeInUp.delay(700).duration(1200)}
+              style={styles.logo1}
+            >
+              Magallanez
+            </Animated.Text>
+          </View >
+          <Animated.View 
+            entering={FadeIn.delay(1300).duration(1500)} 
+            style={styles.logoText}
+          >
+            <View style={styles.line} />
+            <Text style={styles.TextM}> M  I    T  I  E  M  P  O  </Text>
+            <View style={styles.line} />
+          </Animated.View>
+        </View>
       </View>
-
-      <View>
-       
-        <Animated.Text
-          entering={FadeInUp.delay(600).duration(1000).springify()}
-          style={styles.logo}
-        >
-          Romina Magallanez
-        </Animated.Text>
-
-        <Animated.View entering={FadeInUp.delay(800).duration(2200).springify()} style={styles.logoText}>
-          <View style={styles.line} />
-          <View>
-            <Text style={styles.TextM}> E  S  T  I  L  I  S  T  A </Text>
-          </View>
-          <View style={styles.line} />
-        </Animated.View>
-
-        <Animated.Text
-          entering={FadeInLeft.delay(800).duration(1000).springify()}
-          style={styles.Text1}
-        >
-          Cuidamos tu imagen, {"\n"}realzamos tu belleza.
-        </Animated.Text>
-      </View>
-
-      {/* Botones */}
-      <Animated.View entering={FadeInDown.delay(800).duration(1000).springify()}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.replace("Login")}
-        >
-          <Text style={styles.buttonText}> Iniciar sesión </Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      <Animated.View entering={FadeInDown.delay(600).duration(1000).springify()}>
-        <TouchableOpacity
-          style={styles.button2}
-          onPress={() => navigation.replace("SignUp")}
-        >
-          <Text style={styles.buttonText}> Crear cuenta </Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+    </ImageBackground>
   );
 }
 
 
-
 const styles = StyleSheet.create({
-  container: {
+  container: { 
     flex: 1,
-    alignItems: "center",
+    width: '100%',
+    height: '100%',
+  },
+  contentOverlay: { 
+    flex: 1,
+    backgroundColor: 'transparent', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
     paddingHorizontal: width * 0.08,
-    paddingVertical: height * 0.04,
-    backgroundColor: "# f2foeb",
+    paddingVertical: height * 0.06,
   },
-  //cambiar el boton de comenzar, un poco mas chico, cambiar el mensaje a "Por favor complete ambos campos"
-  //Subir un poco más el enlace de la lista de registros, "No tenes una cuenta aún, Registrate" f2foeb- f1f1f1- f4f1f8-f5f5f5
-  imageContainer: {
-    position: "absolute",
-    top: 0,
-    borderBottomLeftRadius: 44,
-    borderBottomRightRadius: 44,
-    overflow: "hidden",
-  
+  contentContainer: {
+    alignItems: 'center',
   },
-  fondo: {
-    width: width * 1.0,
-    height: height * 0.4, // altura de la imagen
- 
+  contentContainer1:{
+    alignItems: "center",
+    alignSelf: "center",
+    flexDirection: "row", 
+    justifyContent: "center", 
   },
-
   logo:{
-    color: "#f2f0eb",
-    fontSize: width * 0.11, 
-    fontFamily: 'GreatVibes',
-    marginTop:height * 0.12,
+    color: COLORES.textoPrincipal, 
+    marginRight: 12,
+    fontSize: width * 0.12, 
+    fontFamily: 'GreatVibes', 
     textAlign:"center",
   },
+  logo1:{
+    color: COLORES.textoPrincipal, 
+    fontSize: width * 0.12, 
+    fontFamily: 'GreatVibes', 
+  },
   logoText:{
-    
-    marginBottom: height * 0.10,
+    marginBottom: height * 0.09,
     flexDirection:"row",
     justifyContent:"center", 
+    alignItems: 'center',
+    marginTop: height * -0.01,
   },
   line:{
     width:"35%",
-    backgroundColor: "#a5a3a3ff",
-    marginHorizontal: 8,
+    backgroundColor: COLORES.textoSecundario, 
     height: 1,
-    marginTop: height * 0.010, 
-    
   },
-  
   TextM:{
     fontSize: width * 0.03,
-    color: "#b1a8a8ff"
-    
-  },
-  Text1:{
-    fontSize: width * 0.12, 
-     lineHeight: width * 0.16,  // mejor interlineado
-    color: "#0b1a29ff",          
-    textAlign: "auto",      
-    alignSelf: "flex-start",
-    marginTop: height * 0.07,  // separación desde arriba
-    marginHorizontal: width * 0.08, // padding lateral 
-    fontWeight: "bold",
-  },
-    button: {
-    backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.008,
-    paddingHorizontal: width * 0.1, 
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: height * 0.04,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: width * 0.06,
-  },
-  button2:{
-    backgroundColor: "#060608ff",
-    paddingVertical: height * 0.007,
-    paddingHorizontal: width * 0.1,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: height * 0.01,
-
-  }
+    color: COLORES.textoSecundario, 
+    marginHorizontal: 8,
+  },  
 });
-
-

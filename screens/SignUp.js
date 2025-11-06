@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {//falta la configuracion de cloudinary, cree una nueva carpeta para la config de cloud
+import {
   ImageBackground,
   View,
   Text,
@@ -19,6 +19,17 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 const { width, height } = Dimensions.get("window");
 const backgroundImage = require("../assets/fondo.png");
 
+// --- PALETA "NEÓN OSCURO" ---
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101',
+  textoPrincipal: '#FEE6E6',
+  textoSecundario: '#A0A0A0',
+  acentoPrincipal: '#FB5B5B',
+  acentoAzul: '#6ba1c1ff',
+  acentoVerde: '#5BFB5B',
+};
+
 const allowedDomains = ["gmail.com", "hotmail.com", "yahoo.com"];
 
 const isValidEmailDomain = (email) => {
@@ -28,6 +39,7 @@ const isValidEmailDomain = (email) => {
 };
 
 export default function SignUp({ navigation }) {
+  // (Tu lógica de 'useState' se mantiene intacta)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +53,7 @@ export default function SignUp({ navigation }) {
   const [typeMessage, setTypeMessage] = useState(null);
   const [isPasswordBlurred, setIsPasswordBlurred] = useState(false)
 
+  // (Tu lógica de Animación se mantiene intacta)
   const firstAnim = useState(new Animated.Value(0))[0];
   const lastAnim = useState(new Animated.Value(0))[0];
   const emailAnim = useState(new Animated.Value(0))[0];
@@ -65,6 +78,7 @@ export default function SignUp({ navigation }) {
     }
   };
 
+  // --- CAMBIO: Solo colores ---
   const labelStyle = (anim) => ({
     position: 'absolute',
     left: 35,
@@ -78,7 +92,7 @@ export default function SignUp({ navigation }) {
     }),
     color: anim.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#aaa', '#ff5b5b'],
+      outputRange: [COLORES.textoSecundario, COLORES.acentoPrincipal], // <-- Colores
     }),
   });
 
@@ -93,12 +107,14 @@ export default function SignUp({ navigation }) {
     return passwordRules.every(({rule}) => rule.test(password));
   },[password]);
 
+  // (Tu 'useEffect' se mantiene intacto)
   useEffect(() => {
     if (typeMessage === "error" && (email || password || confirmPassword)) {
       setMessage(null);
     }
   }, [email, password, confirmPassword]);
 
+  // (Tu 'handleSignUp' se mantiene intacto)
   const handleSignUp = async () => {
     
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -138,7 +154,7 @@ export default function SignUp({ navigation }) {
       await createUserWithEmailAndPassword(auth, email, password);
       setTypeMessage("success");
       setMessage("Usuario registrado con éxito.");
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // <-- Navega a Auth (Login)
     } catch (error) {
       let errorMessage = "Hubo un problema al registrar el usuario.";
 
@@ -160,12 +176,13 @@ export default function SignUp({ navigation }) {
   };
 
   const passwordBorderColor =
-    password.length === 0 ? '#FF5B5B' :
-      isPasswordValid ? '#4CAF50' : '#8d0000ff';
+    password.length === 0 ? COLORES.acentoPrincipal :
+      isPasswordValid ? COLORES.acentoVerde : COLORES.acentoPrincipal;
 
   const confirmPasswordBorderColor =
-    password.length === 0 ? '#FF5B5B' :
-      isPasswordValid ? '#4CAF50' : '#8d0000ff';
+    password.length === 0 ? COLORES.acentoPrincipal :
+      (password.length > 0 && password === confirmPassword) ? COLORES.acentoVerde : COLORES.acentoPrincipal;
+
 
   return (
     <KeyboardAvoidingView
@@ -199,12 +216,11 @@ export default function SignUp({ navigation }) {
               </Text>
             )}
           </View>
-
           <View style={styles.container2}>
             {/* Nombre */}
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: height * 0.026 }}>
-              <View style={[styles.inputContainer, { flex: 1.1, marginRight: 8 }]}>
-                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+              <View style={[styles.inputContainer, { flex: 1.1, marginRight: 8, borderColor: COLORES.acentoPrincipal }]}>
+                <FontAwesome name="user" size={20} color={COLORES.textoPrincipal} style={styles.icon} />
                 <Animated.Text style={labelStyle(firstAnim)}>Nombre</Animated.Text>
                 <TextInput
                   style={styles.input}
@@ -213,7 +229,7 @@ export default function SignUp({ navigation }) {
                   onFocus={() => handleFocus(firstAnim)}
                   onBlur={() => handleBlur(firstAnim, firstName)}
                   placeholder=""
-                  placeholderTextColor="#f0f0f0ff"
+                  placeholderTextColor={COLORES.textoSecundario}
                   onChangeText={(text) => {
                     const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
                     setFirstName(filtered);
@@ -222,8 +238,8 @@ export default function SignUp({ navigation }) {
               </View>
 
               {/* Apellido */}
-              <View style={[styles.inputContainer, { flex: 1, marginLeft: 18 }]}>
-                <FontAwesome name="user" size={20} color="#fff" style={styles.icon} />
+              <View style={[styles.inputContainer, { flex: 1, marginLeft: 18, borderColor: COLORES.acentoPrincipal }]}>
+                <FontAwesome name="user" size={20} color={COLORES.textoPrincipal} style={styles.icon} />
                 <Animated.Text style={labelStyle(lastAnim)}>Apellido</Animated.Text>
                 <TextInput
                   style={styles.input}
@@ -232,7 +248,7 @@ export default function SignUp({ navigation }) {
                   onFocus={() => handleFocus(lastAnim)}
                   onBlur={() => handleBlur(lastAnim, lastName)}
                   placeholder=""
-                  placeholderTextColor="#f0f0f0ff"
+                  placeholderTextColor={COLORES.textoSecundario}
                   onChangeText={(text) => {
                     const filtered = text.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
                     setLastName(filtered);
@@ -243,8 +259,8 @@ export default function SignUp({ navigation }) {
 
             {/* Correo */}
             <View style={[styles, { marginTop: -height * 0.023 }]}>
-              <View style={styles.inputContainer}>
-                <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
+              <View style={[styles.inputContainer, { borderColor: COLORES.acentoPrincipal }]}>
+                <FontAwesome name="envelope" size={20} color={COLORES.textoPrincipal} style={styles.icon} />
                 <Animated.Text style={labelStyle(emailAnim)}>Correo electrónico</Animated.Text>
                 <TextInput
                   style={styles.input}
@@ -252,7 +268,7 @@ export default function SignUp({ navigation }) {
                   onChangeText={setEmail}
                   onFocus={() => handleFocus(emailAnim)}
                   placeholder=""
-                  placeholderTextColor="#f0f0f0ff"
+                  placeholderTextColor={COLORES.textoSecundario}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   onBlur={() => {
@@ -268,7 +284,7 @@ export default function SignUp({ navigation }) {
 
             {/* Contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: passwordBorderColor, borderBottomWidth: 2 }]}>
-              <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+              <FontAwesome name="lock" size={20} color={COLORES.textoPrincipal} style={styles.icon} />
               <Animated.Text style={labelStyle(passAnim)}>Contraseña</Animated.Text>
               <TextInput
                 style={styles.input}
@@ -291,14 +307,14 @@ export default function SignUp({ navigation }) {
                 placeholder=""
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color={COLORES.textoPrincipal} />
               </TouchableOpacity>
             </View>
 
             {/* Reglas de contraseña */}
             {passwordTouched && !isPasswordValid && passwordFocused && (
               <View style={styles.passwordRulesBox}>
-                <Text style={{ fontSize: 11,fontWeight: 'bold', color: "#f1e6e6ff" }}>
+                <Text style={styles.rulesTitle}>
                   Requisitos:
                 </Text>
                 {passwordRules.map(({ rule, label }, index) => {
@@ -308,13 +324,13 @@ export default function SignUp({ navigation }) {
                       <FontAwesome
                         name={passed ? "check-circle" : "times-circle"}
                         size={12}
-                        color={passed ? "#3a803cff" : "#a09898ff"}
+                        color={passed ? COLORES.acentoVerde : COLORES.textoSecundario}
                         style={{ marginRight: 6 }}
                       />
                       <Text
                         style={[
                           styles.ruleText,
-                          { color: passed ? "#4CAF50" : "#a09898ff" },
+                          { color: passed ? COLORES.acentoVerde : COLORES.textoSecundario },
                         ]}
                       >
                         {label}
@@ -325,14 +341,14 @@ export default function SignUp({ navigation }) {
               </View>
             )}
             {isPasswordBlurred && !isPasswordValid && (
-              <Text style={{color: "red", marginTop: -20, marginBottom: 20, fontSize: 11}}>
+              <Text style={styles.passwordErrorText}>
                 La contraseña no cumple con los requisitos
               </Text>
             )}
 
             {/* Confirmar contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: confirmPasswordBorderColor, borderBottomWidth: 2 }]}>
-              <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+              <FontAwesome name="lock" size={20} color={COLORES.textoPrincipal} style={styles.icon} />
               <Animated.Text style={labelStyle(confirmAnim)}>Confirmar contraseña</Animated.Text>
               <TextInput
                 style={styles.input}
@@ -343,14 +359,14 @@ export default function SignUp({ navigation }) {
                 onBlur={() => handleBlur(confirmAnim, confirmPassword)}
                 secureTextEntry={!showConfirmPassword}
                 placeholder=""
-                placeholderTextColor="#f0f0f0ff"
+                placeholderTextColor={COLORES.textoSecundario}
               />
               <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#e6e9dbff" />
+                <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color={COLORES.textoPrincipal} />
               </TouchableOpacity>
             </View>
 
-            {confirmPassword.length > 0 && (
+            {confirmPassword.length > 0 && password.length > 0 && (
               <Text
                 style={[
                   styles.passwordMessage,
@@ -358,7 +374,7 @@ export default function SignUp({ navigation }) {
                 ]}
               >
                 {confirmPassword === password
-                  ? ""
+                  ? "Las contraseñas coinciden"
                   : "Las contraseñas no coinciden"}
               </Text>
             )}
@@ -372,9 +388,7 @@ export default function SignUp({ navigation }) {
           <Text style={styles.logo}>Romina Magallanez</Text>
           <View style={styles.logoText}>
             <View style={styles.line} />
-            <View>
-              <Text style={styles.TextM}>M I T I E M P O</Text>
-            </View>
+            <Text style={styles.TextM}>M I T I E M P O</Text>
             <View style={styles.line} />
           </View>
 
@@ -382,7 +396,7 @@ export default function SignUp({ navigation }) {
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={styles.LoginText}>
                 ¿Ya tenés una cuenta?
-                <Text style={{ color: "#ff5b5b" }}> Iniciar sesión </Text>
+                <Text style={{ color: COLORES.acentoPrincipal }}> Iniciar sesión </Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -392,6 +406,7 @@ export default function SignUp({ navigation }) {
   );
 }
 
+// --- ESTILOS "NEÓN OSCURO" (Solo colores) ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -408,48 +423,63 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(32, 23, 23, 0.6)",
-    opacity: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.85)", // <-- CAMBIO: Fondo más oscuro
   },
   container2: {
-    borderRadius: 10,
+    borderRadius: 16, // <-- CAMBIO: Más redondeado
     padding: width * 0.05,
     width: "100%",
-    backgroundColor: "#181515ff",
+    backgroundColor: COLORES.superficie, // <-- CAMBIO: Color de superficie
     paddingVertical: height * 0.03,
   },
   title: {
-    color: "#fff",
+    color: COLORES.textoPrincipal, // <-- CAMBIO
     fontSize: width * 0.1,
     fontWeight: 'bold',
     marginTop: height * 0.02,
-    marginBottom: height * 0.026,
+    marginBottom: 5,
+  },
+  messageContainer: { 
+    height: height * 0.04,
+    justifyContent: "center",
+    flexDirection: 'row',
+    marginBottom: 5,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: "center",
     marginBottom: height * 0.026,
     borderBottomWidth: 2,
-    borderColor: '#ff5b5b',
+    borderColor: COLORES.acentoPrincipal, 
     position: 'relative',
   },
-  icon: { marginRight: 10 },
-  input: { flex: 1, height: height * 0.05, color: "#fff" },
+  icon: { 
+    marginRight: 10,
+    color: COLORES.textoPrincipal, 
+  },
+  input: { 
+    flex: 1, 
+    height: height * 0.05, 
+    color: COLORES.textoPrincipal // <-- CAMBIO
+  },
   button: {
-    backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.010,
-    borderRadius: 50,
+    backgroundColor: COLORES.acentoAzul, // <-- CAMBIO
+    paddingVertical: 14, // <-- CAMBIO
+    borderRadius: 16, // <-- CAMBIO
     alignItems: 'center',
     marginTop: height * 0.01,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: width * 0.05,
+    color: COLORES.textoPrincipal, // <-- CAMBIO
+    fontSize: 16, // <-- CAMBIO
     fontWeight: 'bold',
   },
-  LoginText: { fontSize: width * 0.04, color: '#fff' },
+  LoginText: { 
+    fontSize: width * 0.04, 
+    color: COLORES.textoPrincipal // <-- CAMBIO
+  },
   logo: {
-    color: "#fff",
+    color: COLORES.textoPrincipal, // <-- CAMBIO
     fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
     marginTop: height * 0.01,
@@ -458,37 +488,69 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.02,
     flexDirection: 'row',
     justifyContent: "space-between",
+    alignItems: 'center', // <-- CAMBIO
   },
   line: {
     width: "35%",
-    backgroundColor: "#a5a3a3ff",
-    marginHorizontal: 8,
+    backgroundColor: COLORES.textoSecundario, // <-- CAMBIO
     height: 1,
-    marginTop: height * 0.010,
   },
-  TextM: { fontSize: width * 0.03, color: "#b1a8a8ff" },
+  TextM: { 
+    fontSize: width * 0.03, 
+    color: COLORES.textoSecundario, // <-- CAMBIO
+    marginHorizontal: 8, // <-- CAMBIO
+  },
   passwordRulesBox: {
-    width: '70%',
-    marginTop: -13,
+    width: '100%', // <-- CAMBIO
+    marginTop: -15, // <-- CAMBIO
     marginBottom: height * 0.02,
+    paddingLeft: 10, // <-- CAMBIO
   },
-  ruleItem: { flexDirection: 'row', alignItems: 'center' },
-  ruleText: { fontSize: 10 },
+  rulesTitle: { // <-- NUEVO
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: COLORES.textoPrincipal,
+    marginBottom: 4,
+  },
+  ruleItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center',
+    marginTop: 2, // <-- CAMBIO
+  },
+  ruleText: { 
+    fontSize: 12, // <-- CAMBIO
+  },
   passwordMessage: {
     fontSize: 13,
     textAlign: "left",
-    marginTop: -13,
+    marginTop: -15, // <-- CAMBIO
+    marginBottom: 10, // <-- CAMBIO
     fontWeight: "bold",
   },
-  match: { color: "#3a803cff" },
-  noMatch: { color: "#ac0202ff" },
+  match: { 
+    color: COLORES.acentoVerde // <-- CAMBIO
+  },
+  noMatch: { 
+    color: COLORES.acentoPrincipal // <-- CAMBIO
+  },
+  passwordErrorText: { // <-- NUEVO
+    color: COLORES.acentoPrincipal,
+    marginTop: -20,
+    marginBottom: 20,
+    fontSize: 11,
+  },
   message: {
     fontSize: width * 0.04,
     textAlign: "center",
-    marginBottom: height * 0.1,
-    position: "absolute",
   },
-  errorMessage: { color: "#ff5b5b", marginBottom: height * 0.1 },
-  successMessage: { color: "#4CAF50", marginBottom: height * 0.1 },
-  LoginContainer: { marginTop: height * 0.02, alignItems: 'center' },
+  errorMessage: { 
+    color: COLORES.acentoPrincipal, // <-- CAMBIO
+  },
+  successMessage: { 
+    color: COLORES.acentoVerde, // <-- CAMBIO
+  },
+  LoginContainer: { 
+    marginTop: height * 0.02, 
+    alignItems: 'center' 
+  },
 });

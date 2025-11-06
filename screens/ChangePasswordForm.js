@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Dimensions, 
+  Alert,
+  ActivityIndicator // --- NUEVO ---
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient'; // --- Ya no se usa ---
 import { auth } from '../src/config/firebaseConfig';
 import {
   reauthenticateWithCredential,
@@ -11,6 +20,15 @@ import {
 } from 'firebase/auth';
 
 const { width } = Dimensions.get('window');
+
+// --- PALETA "NEÓN OSCURO" ---
+const COLORES = {
+  superficie: '#190101',
+  textoPrincipal: '#FEE6E6',
+  textoSecundario: '#A0A0A0',
+  acentoPrincipal: '#FB5B5B',
+  acentoAzul: '#6ba1c1ff',
+};
 
 export default function ChangePasswordForm({ setShowModal }) {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -63,64 +81,59 @@ export default function ChangePasswordForm({ setShowModal }) {
 
       {/* Contraseña actual */}
       <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#fb5b5b" style={styles.icon} />
+        <FontAwesome name="lock" size={20} color={COLORES.acentoPrincipal} style={styles.icon} />
         <TextInput
           style={styles.input}
           placeholder="Contraseña actual"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
           secureTextEntry={!showCurrent}
           value={currentPassword}
           onChangeText={setCurrentPassword}
         />
         <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)}>
-          <FontAwesome name={showCurrent ? 'eye-slash' : 'eye'} size={18} color="#aaa" />
+          <FontAwesome name={showCurrent ? 'eye-slash' : 'eye'} size={18} color={COLORES.textoSecundario} /> 
         </TouchableOpacity>
       </View>
 
       {/* Nueva contraseña */}
       <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#fb5b5b" style={styles.icon} />
+        <FontAwesome name="lock" size={20} color={COLORES.acentoPrincipal} style={styles.icon} />
         <TextInput
           style={styles.input}
           placeholder="Nueva contraseña"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
           secureTextEntry={!showNew}
           value={newPassword}
           onChangeText={setNewPassword}
         />
         <TouchableOpacity onPress={() => setShowNew(!showNew)}>
-          <FontAwesome name={showNew ? 'eye-slash' : 'eye'} size={18} color="#aaa" />
+          <FontAwesome name={showNew ? 'eye-slash' : 'eye'} size={18} color={COLORES.textoSecundario} />
         </TouchableOpacity>
       </View>
 
       {/* Confirmar contraseña */}
       <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#fb5b5b" style={styles.icon} />
+        <FontAwesome name="lock" size={20} color={COLORES.acentoPrincipal} style={styles.icon} />
         <TextInput
           style={styles.input}
           placeholder="Confirmar nueva contraseña"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
           secureTextEntry={!showConfirm}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
         <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
-          <FontAwesome name={showConfirm ? 'eye-slash' : 'eye'} size={18} color="#aaa" />
+          <FontAwesome name={showConfirm ? 'eye-slash' : 'eye'} size={18} color={COLORES.textoSecundario} /> 
         </TouchableOpacity>
       </View>
 
-      {/* Botón */}
+      {/* --- CAMBIO: Botón rediseñado --- */}
       <TouchableOpacity style={styles.button} onPress={handleChangePassword} disabled={loading}>
-        <LinearGradient
-          colors={['#fb5b5b', '#b34040']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Actualizando...' : 'Cambiar Contraseña'}
-          </Text>
-        </LinearGradient>
+        {loading ? (
+          <ActivityIndicator color={COLORES.textoPrincipal} />
+        ) : (
+          <Text style={styles.buttonText}>Cambiar Contraseña</Text>
+        )}
       </TouchableOpacity>
 
       {/* Cancelar */}
@@ -131,14 +144,15 @@ export default function ChangePasswordForm({ setShowModal }) {
   );
 }
 
+// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#181515ff',
-    borderRadius: 20,
+    // El fondo es heredado del modal ('superficie')
+    // Dejamos el padding que tenías
     padding: 20,
   },
   title: {
-    color: '#fff',
+    color: COLORES.textoPrincipal, // <-- CAMBIO
     fontSize: width * 0.06,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -148,33 +162,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#fb5b5b',
+    borderColor: COLORES.acentoPrincipal, // <-- CAMBIO (Mismo color)
     marginBottom: 15,
   },
-  icon: { marginRight: 10 },
+  icon: { 
+    marginRight: 10,
+    color: COLORES.acentoPrincipal, // <-- CAMBIO (Mismo color)
+  },
   input: {
     flex: 1,
-    color: '#fff',
+    color: COLORES.textoPrincipal, // <-- CAMBIO
     paddingVertical: 8,
     fontSize: 16,
   },
-  button: { marginTop: 10 },
-  gradient: {
-    borderRadius: 8,
-    paddingVertical: 12,
+  // --- CAMBIO: Estilo de botón ---
+  button: { 
+    marginTop: 20, // Más espacio
+    backgroundColor: COLORES.acentoAzul, // Color de acción
+    borderRadius: 16, // Consistente
+    paddingVertical: 14, // Consistente
     alignItems: 'center',
+    height: 48, // Altura fija para el ActivityIndicator
+    justifyContent: 'center',
   },
+  // (gradient style eliminado)
   buttonText: {
-    color: '#fff',
+    color: COLORES.textoPrincipal, // <-- CAMBIO
     fontSize: 16,
     fontWeight: 'bold',
   },
   cancelButton: {
-    marginTop: 10,
+    marginTop: 15, // Más espacio
     alignItems: 'center',
   },
   cancelText: {
-    color: '#aaa',
+    color: COLORES.textoSecundario, // <-- CAMBIO
     fontSize: 14,
   },
 });
