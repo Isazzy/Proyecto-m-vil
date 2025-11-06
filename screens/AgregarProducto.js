@@ -1,18 +1,35 @@
 // AgregarProducto.js (UI mejorada, validaciones, createdAt)
-import React, { useState, useMemo } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
-  ScrollView, Alert, SafeAreaView, StatusBar, KeyboardAvoidingView,
-  Platform, ActivityIndicator
+import React, { useState, useMemo, useCallback} from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Image, 
+  ScrollView, 
+  Alert,
+  SafeAreaView, // --- NUEVO ---
+  StatusBar, // --- NUEVO ---
+  ActivityIndicator, // --- NUEVO ---
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../src/config/firebaseConfig';
-import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import SelectorTipo from '../src/config/componentes/selectores/SelectorTipo';
 
-const TIPOS = ['Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Barbería', 'Otros'];
+// --- PALETA DE COLORES "NEÓN OSCURO" ---
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
+  textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
+  textoSecundario: '#A0A0A0', // Gris neutral
+  
+  acentoPrincipal: '#FB5B5B', // Tu color
+  acentoAzul: '#5B5BFB',     // Triádica
+  acentoVerde: '#5BFB5B',   // Triádica
+};
 
 export default function AgregarProducto({ navigation }) {
   const [nombre, setNombre] = useState('');
@@ -20,8 +37,7 @@ export default function AgregarProducto({ navigation }) {
   const [tipo, setTipo] = useState('');
   const [cantidad, setCantidad] = useState('');  // texto para formateo
   const [imagen, setImagen] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // --- NUEVO: Estado de carga ---
 
   // ---------- Helpers de formato ----------
   const sanitizePrecio = (val) => {
@@ -74,312 +90,233 @@ export default function AgregarProducto({ navigation }) {
 
   // ---------- Guardar ----------
   const handleGuardar = async () => {
-      if (!validar()) return;
+    // Verificación de campos obligatorios
+    if (!nombre.trim() || !precio.trim() || !tipo.trim() || !cantidad.trim()) {
+      return Alert.alert('Campos Incompletos', 'Por favor completa todos los campos obligatorios (*).');
+    }
 
-      try {
-        setSaving(true);
-        const docRef = await addDoc(collection(db, 'productos'), {
-          nombre: nombre.trim(),
-          precio: precioNumber,
-          tipo,
-          cantidad: cantidadNumber,
-          imagen: imagen ?? null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'productos'), {
+        nombre: nombre.trim(),
+        precio: parseFloat(precio),
+        tipo,
+        cantidad: parseInt(cantidad),
+        imagen: imagen, // guardamos el URI (luego veremos cómo subirlo a Storage)
+      });
 
-        // ✅ Volver a Productos y forzar refresh + destacar el nuevo
-        navigation.navigate('Productos', { refresh: true, highlightId: docRef.id });
-
-      } catch (err) {
-        console.error('Error al guardar producto:', err);
-        Alert.alert('Error', 'No se pudo guardar el producto.');
-      } finally {
-        setSaving(false);
-      }
+      Alert.alert('Éxito', 'Producto guardado correctamente.');
+      navigation.goBack();
+    } catch (err) {
+      console.error('Error al guardar producto:', err);
+      Alert.alert('Error', 'No se pudo guardar el producto.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ---------- UI ----------
+  // --- NUEVO: Lógica para "Cancelar" ---
+  const handleCancelar = () => {
+    // Comprueba si algún campo tiene datos
+    const isDirty = 
+      nombre.trim() !== '' || 
+      precio.trim() !== '' || 
+      tipo.trim() !== '' || 
+      cantidad.trim() !== '' || 
+      imagen !== null;
+
+    if (!isDirty) {
+      navigation.goBack(); // Si no hay cambios, solo vuelve
+      return;
+    }
+
+    // Si hay cambios, pregunta
+    Alert.alert(
+      'Descartar Cambios',
+      '¿Seguro que quieres salir? Se perderán los datos que no guardaste.',
+      [
+        { text: 'Quedarse', style: 'cancel' },
+        {
+          text: 'Descartar',
+          style: 'destructive',
+          onPress: () => navigation.goBack(), // Vuelve y descarta
+        }
+      ]
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.titulo}>Agregar Producto</Text>
 
-      {/* Header */}
-      <LinearGradient colors={['#1f1f1f', '#161616']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Productos'))}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        <TouchableOpacity style={styles.imageContainer} onPress={seleccionarImagen}>
+          {imagen ? (
+            <Image source={{ uri: imagen }} style={styles.image} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Ionicons name="image-outline" size={50} color={COLORES.textoSecundario} />
+              <Text style={styles.imagePlaceholderTexto}>Seleccionar imagen</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        {/* --- CAMPO NOMBRE --- */}
+        <Text style={styles.label}>Nombre <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: Esmalte Top Coat"
+          placeholderTextColor={COLORES.textoSecundario}
+          value={nombre}
+          onChangeText={setNombre}
+        />
+
+        {/* --- CAMPO PRECIO --- */}
+        <Text style={styles.label}>Precio <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: 2500"
+          placeholderTextColor={COLORES.textoSecundario}
+          keyboardType="numeric"
+          value={precio}
+          onChangeText={setPrecio}
+        />
+
+        {/* --- CAMPO CATEGORÍA --- */}
+        <Text style={styles.label}>Categoría <Text style={styles.asterisco}>*</Text></Text>
+        <SelectorTipo 
+          tipoSeleccionado={tipo}
+          onSelectTipo={setTipo}
+        />
+
+        {/* --- CAMPO CANTIDAD --- */}
+        <Text style={styles.label}>Cantidad (Stock) <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: 50"
+          placeholderTextColor={COLORES.textoSecundario}
+          keyboardType="numeric"
+          value={cantidad}
+          onChangeText={setCantidad}
+        />
+
+        {/* --- BOTONES DE ACCIÓN --- */}
+        <View style={styles.bottomButtons}>
+          <TouchableOpacity 
+            style={styles.btnCancelar} 
+            onPress={handleCancelar} // --- CAMBIO ---
+            disabled={loading}
           >
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Text style={styles.btnTexto}>Cancelar</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Agregar producto</Text>
-          <View style={{ width: 34 }} />
+          <TouchableOpacity 
+            style={styles.btnGuardar} 
+            onPress={handleGuardar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORES.textoPrincipal} />
+            ) : (
+              <Text style={styles.btnTexto}>Guardar</Text>
+            )}
+          </TouchableOpacity>
         </View>
-      </LinearGradient>
-
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          {/* Imagen */}
-          <View style={styles.imageRow}>
-            <TouchableOpacity style={styles.imageContainer} onPress={seleccionarImagen} accessibilityLabel="Seleccionar imagen">
-              {imagen ? (
-                <Image source={{ uri: imagen }} style={styles.image} />
-              ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Ionicons name="image-outline" size={48} color="#8a93a0" />
-                  <Text style={{ color: '#8a93a0', marginTop: 6 }}>Seleccionar imagen</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <View style={styles.imageActions}>
-              <TouchableOpacity style={[styles.smallBtn, styles.smallBtnPrimary]} onPress={seleccionarImagen}>
-                <Ionicons name="images-outline" size={16} color="#0e1116" />
-                <Text style={styles.smallBtnTextDark}>Galería</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.smallBtn, styles.smallBtnGhost]} onPress={quitarImagen} disabled={!imagen}>
-                <Ionicons name="trash-outline" size={16} color={imagen ? '#ff6b6b' : '#666'} />
-                <Text style={[styles.smallBtnText, { color: imagen ? '#ff6b6b' : '#666' }]}>Quitar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Nombre */}
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={[styles.input, errors.nombre && styles.inputError]}
-              placeholder="Ej. Serum hidratante"
-              placeholderTextColor="#8a93a0"
-              value={nombre}
-              onChangeText={(t) => {
-                setNombre(t);
-                if (errors.nombre) setErrors((prev) => ({ ...prev, nombre: undefined }));
-              }}
-            />
-            {errors.nombre ? <Text style={styles.errorText}>{errors.nombre}</Text> : null}
-          </View>
-
-          {/* Tipo chips */}
-          <Text style={styles.label}>Tipo</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-            {TIPOS.map((t) => {
-              const active = tipo === t;
-              return (
-                <TouchableOpacity
-                  key={t}
-                  style={[styles.chip, active && styles.chipActive]}
-                  onPress={() => {
-                    setTipo(t);
-                    if (errors.tipo) setErrors((prev) => ({ ...prev, tipo: undefined }));
-                  }}
-                >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>{t}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-          {errors.tipo ? <Text style={[styles.errorText, { marginTop: -6 }]}>{errors.tipo}</Text> : null}
-
-          {/* Picker fallback */}
-          <View style={styles.pickerContainer}>
-            <Picker selectedValue={tipo} onValueChange={setTipo} style={styles.picker} dropdownIconColor="#dbe8f2">
-              <Picker.Item label="Seleccionar tipo" value="" color="#8a93a0" />
-              {TIPOS.map((t) => (
-                <Picker.Item key={t} label={t} value={t} />
-              ))}
-            </Picker>
-          </View>
-
-          {/* Precio y Cantidad */}
-          <View style={styles.row2}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Precio</Text>
-              <View style={styles.inputAffix}>
-                <Text style={styles.prefix}>$</Text>
-                <TextInput
-                  style={[styles.input, styles.inputNoPadLeft, errors.precio && styles.inputError]}
-                  placeholder="0.00"
-                  placeholderTextColor="#8a93a0"
-                  keyboardType="decimal-pad"
-                  value={precio}
-                  onChangeText={(t) => {
-                    setPrecio(sanitizePrecio(t));
-                    if (errors.precio) setErrors((prev) => ({ ...prev, precio: undefined }));
-                  }}
-                  onBlur={() => {
-                    if (!isNaN(precioNumber)) setPrecio(precioNumber.toFixed(2));
-                  }}
-                />
-              </View>
-              {errors.precio ? <Text style={styles.errorText}>{errors.precio}</Text> : null}
-            </View>
-
-            <View style={{ width: 12 }} />
-
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Cantidad</Text>
-              <View style={styles.inputAffix}>
-                <Ionicons name="cube-outline" size={14} color="#8a93a0" style={{ marginLeft: 8, marginRight: 6 }} />
-                <TextInput
-                  style={[styles.input, styles.inputNoPadLeft, errors.cantidad && styles.inputError]}
-                  placeholder="0"
-                  placeholderTextColor="#8a93a0"
-                  keyboardType="number-pad"
-                  value={cantidad}
-                  onChangeText={(t) => {
-                    setCantidad(sanitizeCantidad(t));
-                    if (errors.cantidad) setErrors((prev) => ({ ...prev, cantidad: undefined }));
-                  }}
-                />
-              </View>
-              {errors.cantidad ? <Text style={styles.errorText}>{errors.cantidad}</Text> : null}
-            </View>
-          </View>
-
-          {/* Botones */}
-          <View style={styles.bottomButtons}>
-            <TouchableOpacity
-              style={[styles.btnGuardar, (saving) && { opacity: 0.8 }]}
-              onPress={handleGuardar}
-              disabled={saving}
-            >
-              {saving ? (
-                <>
-                  <ActivityIndicator size="small" color="#0e1116" />
-                  <Text style={[styles.btnTextDark, { marginLeft: 8 }]}>Guardando...</Text>
-                </>
-              ) : (
-                <>
-                  <Ionicons name="save-outline" size={18} color="#0e1116" />
-                  <Text style={[styles.btnTextDark, { marginLeft: 8 }]}>Guardar</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.btnCancelar}
-              onPress={() => navigation.goBack()}
-              disabled={saving}
-            >
-              <Ionicons name="close-circle-outline" size={18} color="#dbe8f2" />
-              <Text style={{ color: '#dbe8f2', marginLeft: 8, fontWeight: '700' }}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ height: 28 }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
+// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#121212' },
-
-  // Header
-  header: {
-    paddingTop: 6,
-    paddingBottom: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#000',
+  container: {
+    flex: 1,
+    backgroundColor: COLORES.fondo,
   },
-  headerRow: {
-    paddingHorizontal: 14,
-    flexDirection: 'row',
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORES.textoPrincipal,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  imageContainer: {
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 24,
   },
-  backButton: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.15)',
-  },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#fff' },
-
-  // Body
-  container: { padding: 16, paddingBottom: 40 },
-  imageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  imageContainer: { width: 160, height: 160, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#232b33' },
-  image: { width: '100%', height: '100%' },
-  imagePlaceholder: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#1e1e1e',
-    borderWidth: 1, borderColor: '#232b33',
-  },
-  imageActions: { gap: 10, alignItems: 'flex-start' },
-  smallBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 12, height: 38, borderRadius: 10,
+  image: {
+    width: 160,
+    height: 160,
+    borderRadius: 16,
     borderWidth: 1,
+    borderColor: COLORES.acentoPrincipal, // Borde con tu color
   },
-  smallBtnPrimary: { backgroundColor: '#ff7b7b', borderColor: '#97c5df' },
-  smallBtnGhost: { backgroundColor: '#121212', borderColor: '#2a2f36' },
-  smallBtnTextDark: { color: '#0e1116', fontWeight: '800' },
-  smallBtnText: { color: '#dbe8f2', fontWeight: '700' },
-
-  field: { marginTop: 8, marginBottom: 8 },
-  label: { color: '#dbe8f2', marginBottom: 6, fontWeight: '700' },
+  imagePlaceholder: {
+    width: 160,
+    height: 160,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: COLORES.superficie, // Borde sutil
+    borderStyle: 'dashed', // Borde punteado
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORES.superficie,
+  },
+  imagePlaceholderTexto: {
+    color: COLORES.textoSecundario,
+    marginTop: 8,
+  },
+  // --- NUEVO: Estilo para etiquetas ---
+  label: {
+    fontSize: 14,
+    color: COLORES.textoPrincipal,
+    marginBottom: 8,
+    marginTop: 10,
+  },
+  asterisco: {
+    color: COLORES.acentoPrincipal, // Tu color
+  },
   input: {
-    backgroundColor: '#1a1f24',
-    color: '#e6edf3',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
-    borderWidth: 1, borderColor: '#232b33',
+    backgroundColor: COLORES.superficie,
+    color: COLORES.textoPrincipal,
+    borderRadius: 16,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: COLORES.superficie,
   },
-  inputError: { borderColor: '#ff6b6b' },
-  errorText: { color: '#ff9d9d', marginTop: 6, fontSize: 12 },
-
-  // Chips Tipo
-  chipsRow: { paddingVertical: 6, paddingRight: 6 },
-  chip: {
-    marginRight: 8,
-    backgroundColor: '#1f1f1f',
-    borderWidth: 1, borderColor: '#2a2a2a',
-    paddingHorizontal: 12, paddingVertical: 8,
-    borderRadius: 20,
+  bottomButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 30,
   },
-  chipActive: { backgroundColor: '#97c5df', borderColor: '#97c5df' },
-  chipText: { color: '#dbe8f2', fontSize: 12, fontWeight: '600' },
-  chipTextActive: { color: '#0e1116' },
-
-  // Picker
-  pickerContainer: {
-    backgroundColor: '#1a1f24',
-    borderWidth: 1, borderColor: '#232b33',
-    borderRadius: 12,
-    marginTop: 6, marginBottom: 10,
-  },
-  picker: { color: '#e6edf3' },
-
-  // Precio / Cantidad
-  row2: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 2 },
-  inputAffix: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#1a1f24',
-    borderWidth: 1, borderColor: '#232b33',
-    borderRadius: 12,
-    height: 44,
-  },
-  prefix: { color: '#8a93a0', marginLeft: 12, marginRight: 6, fontWeight: '700' },
-  inputNoPadLeft: { flex: 1, borderWidth: 0, backgroundColor: 'transparent', paddingHorizontal: 0 },
-
-  // Botones
-  bottomButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
   btnGuardar: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#ff7b7b',
-    padding: 12, borderRadius: 10, width: '48%',
+    backgroundColor: COLORES.acentoPrincipal, // Tu color
+    padding: 14,
+    borderRadius: 16,
+    flex: 1, // Ocupa espacio
+    alignItems: 'center',
+    marginLeft: 8,
   },
   btnCancelar: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#1a1f24',
-    padding: 12, borderRadius: 10, width: '48%',
-    borderWidth: 1, borderColor: '#232b33',
+    backgroundColor: COLORES.superficie, // Botón secundario
+    padding: 14,
+    borderRadius: 16,
+    flex: 1, // Ocupa espacio
+    alignItems: 'center',
+    marginRight: 8,
   },
-  btnTextDark: { color: '#fff', fontWeight: '800' },
+  btnTexto: {
+    color: COLORES.textoPrincipal,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });

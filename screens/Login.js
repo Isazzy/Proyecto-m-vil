@@ -1,14 +1,31 @@
 //screens/Login.js
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Dimensions, 
+  ScrollView, 
+  StatusBar,   
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { FadeInDown, FadeInLeft, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', //190101
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
+  acentoPrincipal: '#FB5B5B', //FB5B5B
+  acentoAzul: '#6ba1c1ff',     //6ba1c1ff
+};
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -25,21 +42,22 @@ export default function Login({ navigation }) {
 
   const emailLabelStyle = useAnimatedStyle(() => ({
     position: 'absolute',
-    left: 35,
-    top: withTiming(emailAnim.value ? -10 : 12, { duration: 200 }),
+    left: 45, 
+    top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),
     fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
-    color: emailAnim.value ? '#ff5b5b' : '#aaa',
+    color: emailAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario, 
+    paddingHorizontal: 4,
   }));
 
   const passLabelStyle = useAnimatedStyle(() => ({
     position: 'absolute',
-    left: 35,
-    top: withTiming(passAnim.value ? -10 : 12, { duration: 200 }),
+    left: 45, 
+    top: withTiming(passAnim.value ? -10 : 15, { duration: 200 }),
     fontSize: withTiming(passAnim.value ? 13 : 16, { duration: 200 }),
-    color: passAnim.value ? '#ff5b5b' : '#aaa',
+    color: passAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario, 
+    paddingHorizontal: 4,
   }));
 
-  // ✅ Validar formato del correo
   const validateEmailFormat = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
@@ -52,7 +70,6 @@ export default function Login({ navigation }) {
     }
   };
 
-  // Cargar credenciales guardadas
   useEffect(() => {
     const loadCredentials = async () => {
       try {
@@ -77,7 +94,7 @@ export default function Login({ navigation }) {
     if (typeMessage === "error" && email && password) setMessage(null);
   }, [email, password]);
 
-  // ✅ Manejar login
+  
   const handleLogin = async () => {
     if (!email || !password) {
       setTypeMessage("error");
@@ -93,18 +110,16 @@ export default function Login({ navigation }) {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // const user = userCredential.user;
 
       if (remember) {
         await AsyncStorage.setItem('email', email);
       } else {
         await AsyncStorage.removeItem('email');
       }
-
-      setMessage("Has iniciado sesión correctamente.");
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] });
     } catch (error) {
-      let errorMessage = "Correo y/o contraseña incorrecto.";
+      let errorMessage = "Correo y/o contraseña incorrectas.";
       switch (error.code) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido.";
@@ -125,29 +140,23 @@ export default function Login({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-      <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          <Animated.Image
-            entering={FadeInLeft.duration(1600)}
-            source={require('../assets/fondo.png')}
-            style={styles.fondo}
-          />
-        </View>
-
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        
+        
         <Animated.Text entering={FadeInDown.duration(1600)} style={styles.title}>
           ¡Bienvenido de nuevo!
         </Animated.Text>
-
-        {/* 🔴 Mensajes globales de error o éxito */}
-        <View style={{ height: height * 0.03, justifyContent: "center", textAlign: "center", flexDirection: 'row' }}>
+        
+        <View style={styles.messageContainer}>
           {message && <Text style={[styles.message, typeMessage === "error" && styles.errorMessage]}>{message}</Text>}
         </View>
 
         <View style={styles.formBox}>
-          {/* Correo */}
-          <View style={[styles.inputContainer, emailError && { borderColor: '#ff5b5b' }]}>
-            <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
+          {/* Email */}
+          <View style={[styles.inputContainer, emailError && { borderColor: COLORES.acentoAzul }]}>
+            <FontAwesome name="envelope" size={20} color={COLORES.textoSecundario} style={styles.icon} />
             <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
             <TextInput
               style={styles.input}
@@ -162,7 +171,7 @@ export default function Login({ navigation }) {
               }}
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholderTextColor="#f0f0f0ff"
+              placeholderTextColor={COLORES.textoSecundario}
               onFocus={() => emailAnim.value = 1}
               onBlur={() => {
                 emailAnim.value = email ? 1 : 0;
@@ -171,9 +180,9 @@ export default function Login({ navigation }) {
             />
           </View>
 
-          {/* Contraseña */}
-          <View style={styles.inputContainer}>
-            <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
+          {/* Password */}
+          <View style={[styles.inputContainer,{  borderBottomWidth: 2 }]}>
+            <FontAwesome name="lock" size={20} color={COLORES.textoSecundario} style={styles.icon} />
             <Animated.Text style={passLabelStyle}>Contraseña</Animated.Text>
             <TextInput
               style={styles.input}
@@ -185,7 +194,7 @@ export default function Login({ navigation }) {
               onBlur={() => passAnim.value = password ? 1 : 0}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color="#e6e9dbff" />
+              <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color={COLORES.textoSecundario} />
             </TouchableOpacity>
           </View>
 
@@ -195,16 +204,10 @@ export default function Login({ navigation }) {
               onPress={async () => {
                 setRemember(!remember);
                 if (remember) {
-                  setEmail('');
-                  setPassword('');
-                  emailAnim.value = 0;
-                  passAnim.value = 0;
-                  await AsyncStorage.removeItem("email");
-                  await AsyncStorage.removeItem("password");
                 }
               }}
             >
-              <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color="#fff" />
+              <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color={COLORES.textoPrincipal} />
               <Text style={styles.rememberText}>Recordar</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
@@ -216,109 +219,106 @@ export default function Login({ navigation }) {
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
         </View>
-
         <Text style={styles.logo}>Romina Magallanez</Text>
         <View style={styles.logoText}>
           <View style={styles.line} />
-          <View>
-            <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
-          </View>
+          <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
           <View style={styles.line} />
         </View>
 
         <View style={styles.signUpContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.signUpText}>¿No tenés cuenta aún?
-              <Text style={{ color: "#ff5b5b" }}>  Regístrate</Text>
+              <Text style={{ color: COLORES.acentoPrincipal }}>  Regístrate</Text>
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORES.fondo,
+  },
+  scrollContainer: {
+    flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: width * 0.08,
     paddingVertical: height * 0.04,
-    backgroundColor: '#181515ff',
   },
-  imageContainer: {
-    position: "absolute",
-    top: 0,
-    borderBottomRightRadius: 100,
-    overflow: "hidden",
-    opacity: 0.4,
-  },
-  fondo: {
-    width: width * 1.1,
-    height: height * 0.3,
-  },
+ 
   title: {
-    fontFamily: 'GreatVibes',
-    color: "#fff",
+    fontFamily: 'GreatVibes', 
+    color: COLORES.textoPrincipal,
     fontSize: width * 0.1,
     fontWeight: 'bold',
     marginTop: height * 0.06,
     marginBottom: height * 0.02,
   },
+  messageContainer: {
+    height: height * 0.03, 
+    justifyContent: "center", 
+    alignItems: 'center',
+  },
   formBox: {
-    borderRadius: 20,
-    padding: width * 0.05,
     width: "100%",
     marginTop: height * 0.05,
   },
+  //  Inputs
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#ff5b5b',
+    borderColor: COLORES.acentoPrincipal, // Tu color original
     marginBottom: height * 0.04,
   },
   icon: {
-    marginRight: 5,
-    marginTop: height * -0.006,
+    marginRight: 10,
+    marginLeft: 5,
   },
   input: {
     flex: 1,
-    height: height * 0.05,
-    color: "#fff",
+    height: '100%',
+    color: COLORES.textoPrincipal,
+    fontSize: 16,
   },
   optionsRow: {
     flexDirection: "row",
     justifyContent: 'space-between',
     marginVertical: height * 0.015,
-    marginTop: height * -0.009,
+    marginTop: -10, // Sube las opciones
   },
   remember: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   rememberText: {
-    color: "#fdfdfdff",
+    color: COLORES.textoPrincipal,
     marginLeft: 5,
     fontSize: width * 0.032,
   },
   forgot: {
-    color: '#c7d9e4ff',
+    color: COLORES.acentoPrincipal,
     fontSize: width * 0.030,
   },
+  // --- CAMBIO: Estilo de Botón ---
   button: {
-    backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.007,
-    borderRadius: 50,
+    backgroundColor: COLORES.superficie, // Azul para acción principal
+    paddingVertical: 14,
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: height * 0.03,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: width * 0.06,
+    color: COLORES.textoPrincipal,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   logo: {
-    color: "#fff",
+    color: COLORES.textoPrincipal,
     fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
     marginTop: height * 0.03,
@@ -327,31 +327,30 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.04,
     flexDirection: 'row',
     justifyContent: "space-between",
+    alignItems: 'center',
   },
   line: {
     width: "35%",
-    backgroundColor: "#a5a3a3ff",
-    marginHorizontal: 8,
+    backgroundColor: COLORES.textoSecundario,
     height: 1,
-    marginTop: height * 0.010,
   },
   TextM: {
     fontSize: width * 0.03,
-    color: "#b1a8a8ff"
+    color: COLORES.textoSecundario,
+    marginHorizontal: 8,
   },
   signUpContainer: {
     marginBottom: height * 0.04,
   },
   signUpText: {
     fontSize: width * 0.04,
-    color: '#ffffffff',
+    color: COLORES.textoPrincipal,
   },
   message: {
-    marginTop: height * 0.01,
     fontSize: width * 0.04,
     textAlign: "center",
   },
   errorMessage: {
-    color: "#ff5b5b",
+    color: COLORES.acentoPrincipal,
   },
 });

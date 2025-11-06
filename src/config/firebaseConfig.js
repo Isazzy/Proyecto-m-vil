@@ -11,10 +11,11 @@ import {
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // ⚠️ Reemplazá solo si corresponde. Para SDK v9, el bucket va con appspot.com
 const firebaseConfig = {
+<<<<<<< HEAD
   apiKey: 'AIzaSyD4vl9Y8KJHAh6uGgv6U6N2JGkF0eXpRqQ',
   authDomain: 'mobileapp-efd20.firebaseapp.com',
   projectId: 'mobileapp-efd20',
@@ -22,6 +23,15 @@ const firebaseConfig = {
   messagingSenderId: '330520281855',
   appId: '1:330520281855:web:daca5f61f0127be22bc2ca',
   measurementId: 'G-PTLCF2XTNE', // no afecta RN; no molesta
+=======
+  apiKey: "AIzaSyD4vl9Y8KJHAh6uGgv6U6N2JGkF0eXpRqQ",
+  authDomain: "mobileapp-efd20.firebaseapp.com",
+  projectId: "mobileapp-efd20",
+  storageBucket: "mobileapp-efd20.appspot.com",
+  messagingSenderId: "330520281855",
+  appId: "1:330520281855:web:daca5f61f0127be22bc2ca",
+  measurementId: "G-PTLCF2XTNE"
+>>>>>>> 1ac8f38b88475c1a32272459274e6d349e224e3e
 };
 
 // Aseguramos una sola app

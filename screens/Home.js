@@ -1,10 +1,9 @@
-import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
   Text,
   StyleSheet,
-  useWindowDimensions,
   Image,
   ActivityIndicator,
   Alert,
@@ -12,202 +11,355 @@ import {
   Pressable,
   RefreshControl,
   StatusBar,
-  Animated,
-  Easing,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '../src/config/firebaseConfig';
+import { auth, db } from '../src/config/firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore'; 
+import { BarChart } from 'react-native-chart-kit'; 
 
-export default function Home({ navigation }) {
-  // ----- HOOKS -----
-  const [user, loading, error] = useAuthState(auth);
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
+  textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
+  textoSecundario: '#A0A0A0', // Gris neutral
+  
+  acentoPrincipal: '#FB5B5B', 
+  acentoAzul: '#6ba1c1ff',     // Triádica
+  acentoVerde: '#5BFB5B',   // Triádica
+};
+
+
+//  Celda de Estadística 
+const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
+  <View style={dashboardStyles.statCelda}>
+    <Ionicons name={icono} size={24} color={colorIcono} />
+    <Text style={dashboardStyles.statValor}>{valor}</Text>
+    <Text style={dashboardStyles.statTitulo}>{titulo}</Text>
+  </View>
+);
+
+//  Item de Top Producto 
+const TopProductoItem = ({ item }) => (
+  <Pressable style={dashboardStyles.topProductoCard}>
+    <Image
+      source={item.imagen ? { uri: item.imagen } : require('../assets/placeholder.png')} 
+      style={dashboardStyles.topProductoImagen}
+    />
+    <View style={dashboardStyles.topProductoInfo}>
+      <Text style={dashboardStyles.topProductoNombre} numberOfLines={1}>
+        {item.nombre}
+      </Text>
+      <Text style={dashboardStyles.topProductoStock}>
+        Stock: {item.cantidad}
+      </Text>
+    </View>
+    <Text style={dashboardStyles.topProductoPrecio}>
+      ${item.precio}
+    </Text>
+  </Pressable>
+);
+
+//  Botón de Acceso Rápido 
+const AccesoRapidoItem = ({ item, onPress }) => (
+  <Pressable
+    onPress={() => onPress(item.screen)}
+    style={({ pressed }) => [
+      dashboardStyles.accesoBoton,
+      pressed && { backgroundColor: COLORES.superficie }, 
+    ]}
+  >
+    <View style={[dashboardStyles.accesoIconoBg, { backgroundColor: COLORES.acentoAzul }]}>
+      <Ionicons name={item.icon} size={30} color={COLORES.textoPrincipal} />
+    </View>
+    <Text style={dashboardStyles.accesoTitulo}>{item.titulo}</Text>
+  </Pressable>
+);
+
+//  Header del Dashboard 
+const RenderDashboardHeader = ({
+  totalProductos,
+  loadingProductos,
+  topProductos,
+  loadingTopProductos,
+  datosGraficoBarras,
+  loadingGraficoBarras,
+  items,
+  handleOpenScreen,
+}) => {
   const { width: screenWidth } = useWindowDimensions();
+  
+  // Datos hardcodeados
+  const ventasMes = '$ 128.500';
+  const nuevosClientes = '12';
 
-  // Nombre a mostrar (sin fallback al correo)
-  const displayName =
-    (user?.displayName && user.displayName.trim()) ||
-    (user?.providerData?.[0]?.displayName && user.providerData[0].displayName.trim()) ||
-    'Usuario';
-
-  // Cards del cuerpo
-  const items = useMemo(
-    () => [
-      { id: '1', icon: 'pricetags-sharp',  titulo: 'Productos',   texto: 'Gestiona todos los productos', screen: 'Productos' },
-      { id: '2', icon: 'calendar-sharp',   titulo: 'Agenda',      texto: 'Organiza y revisa tus turnos', screen: 'Agenda' },
-      { id: '3', icon: 'people-sharp',     titulo: 'Usuarios',    texto: 'Gestiona tus clientes',        screen: 'Usuarios' },
-      { id: '4', icon: 'calculator-sharp', titulo: 'Servicios',   texto: 'Registra y consulta ventas',   screen: 'Servicios' },
-      { id: '5', icon: 'person-add-sharp', titulo: 'Proveedores', texto: 'Administra proveedores',        screen: 'Proveedores' },
-      { id: '6', icon: 'cart-sharp',       titulo: 'Compras',     texto: 'Gestiona tus compras',         screen: 'Compras' },
-    ],
-    []
-  );
-
-  // Notificaciones (header)
-  const [notifications, setNotifications] = useState([
-    { id: 'n1', title: 'Venta realizada', body: 'Orden #A102 por $45.000', time: 'Hace 5 min', unread: true },
-    { id: 'n2', title: 'Turno cancelado', body: 'Juan Pérez canceló 16:00', time: 'Hace 20 min', unread: true },
-  ]);
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const handleOpenScreen = useCallback(
-    (screenName) => {
-      if (!screenName) {
-        Alert.alert('Próximamente', 'Esta sección aún no está disponible.');
-        return;
-      }
-      navigation.navigate(screenName);
+  // Config del gráfico
+  const chartConfig = {
+    backgroundColor: 'transparent',
+    backgroundGradientFromOpacity: 0,
+    backgroundGradientToOpacity: 0,
+    color: (opacity = 1) => `rgba(251, 91, 91, ${opacity})`, 
+    labelColor: (opacity = 1) => `rgba(160, 160, 160, ${opacity})`, 
+    strokeWidth: 2,
+    barPercentage: 0.8,
+    useShadows: false,
+    propsForLabels: {
+      fontSize: 10,
     },
-    [navigation]
-  );
+  };
 
-  // ======= MENÚ NOTIFICACIONES (HEADER) =======
-  const [headerHeight, setHeaderHeight] = useState(64);
-  const [bellAnchor, setBellAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const [notifOpen, setNotifOpen] = useState(false);
-  const notifAnim = useRef(new Animated.Value(0)).current;
+  return (
+    <View style={dashboardStyles.dashboardContainer}>
+      {/* SECCIÓN DE ESTADÍSTICAS  */}
+      <Text style={dashboardStyles.tituloSeccion}>Resumen</Text>
+      <View style={dashboardStyles.statsContainer}>
+        <CeldaEstadistica
+          icono="pricetags-sharp"
+          titulo="Total Productos"
+          valor={loadingProductos ? '...' : totalProductos}
+          colorIcono={COLORES.acentoPrincipal} // Rojo
+        />
+        <CeldaEstadistica
+          icono="cash-sharp"
+          titulo="Ventas del Mes"
+          valor={ventasMes}
+          colorIcono={COLORES.acentoVerde} // Verde
+        />
+        <CeldaEstadistica
+          icono="people-sharp"
+          titulo="Nuevos Clientes"
+          valor={nuevosClientes}
+          colorIcono={COLORES.acentoAzul} // Azul
+        />
+      </View>
+
+      {/*  SECCIÓN GRÁFICO DE BARRAS */}
+      <Text style={dashboardStyles.tituloSeccion}>Inventario por Categoría</Text>
+      <View style={dashboardStyles.graficoContainer}>
+        {loadingGraficoBarras ? (
+          <ActivityIndicator color={COLORES.textoPrincipal} style={{ height: 220 }} />
+        ) : (
+          <BarChart
+            data={{
+              labels: datosGraficoBarras.map(d => d.label),
+              datasets: [{ data: datosGraficoBarras.map(d => d.value) }]
+            }}
+            width={screenWidth - 64} 
+            height={220}
+            chartConfig={chartConfig}
+            withVerticalLabels={true}
+            withHorizontalLabels={false}
+            fromZero={true}
+            withInnerLines={false}
+            showBarTops={false}
+            style={{ borderRadius: 16 }}
+          />
+        )}
+      </View>
+
+      {/*  TOP PRODUCTOS */}
+      <Text style={dashboardStyles.tituloSeccion}>Top Productos</Text>
+      <View style={dashboardStyles.topProductoList}>
+        {loadingTopProductos ? (
+          <ActivityIndicator color={COLORES.textoPrincipal} style={{ marginVertical: 20 }} />
+        ) : (
+          topProductos.map((prod) => (
+            <TopProductoItem key={prod.id} item={prod} />
+          ))
+        )}
+      </View>
+
+      {/* ACCESOS RÁPIDOS  */}
+      <Text style={dashboardStyles.tituloSeccion}>Accesos Rápidos</Text>
+      <View style={dashboardStyles.accesosGridContainer}>
+        {items.map((item) => (
+          <AccesoRapidoItem key={item.id} item={item} onPress={handleOpenScreen} />
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export default function Home({ navigation }) { 
+  const [user, loading, error] = useAuthState(auth);
+  
+  const [totalProductos, setTotalProductos] = useState(0);
+  const [loadingProductos, setLoadingProductos] = useState(true);
+  const [topProductos, setTopProductos] = useState([]);
+  const [loadingTopProductos, setLoadingTopProductos] = useState(true);
+  const [datosGraficoBarras, setDatosGraficoBarras] = useState([]);
+  const [loadingGraficoBarras, setLoadingGraficoBarras] = useState(true);
 
   useEffect(() => {
-    Animated.timing(notifAnim, {
-      toValue: notifOpen ? 1 : 0,
-      duration: 180,
-      easing: notifOpen ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [notifOpen, notifAnim]);
+    const colRef = collection(db, 'productos');
+    const unsubscribeTotal = onSnapshot(colRef, (snapshot) => {
+      setTotalProductos(snapshot.size);
+      setLoadingProductos(false);
+    }, (error) => { setLoadingProductos(false); });
 
-  const notifOverlayOpacity = notifAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.25] });
-  const notifMenuTranslateY = notifAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] });
-  const notifMenuOpacity = notifAnim;
+    //  Top 3
+    const qTop = query(colRef, orderBy('nombre', 'asc'), limit(3));
+    const unsubscribeTop = onSnapshot(qTop, (snapshot) => {
+      const listaTop = [];
+      snapshot.forEach((doc) => {
+        listaTop.push({ id: doc.id, ...doc.data() });
+      });
+      setTopProductos(listaTop);
+      setLoadingTopProductos(false);
+    }, (error) => { setLoadingTopProductos(false); });
 
-  const NOTIF_MENU_WIDTH = Math.min(screenWidth - 40, 320);
-  const bellCenterX = bellAnchor.x + bellAnchor.width / 2;
-  const notifLeftCandidate = bellCenterX - NOTIF_MENU_WIDTH / 2;
-  const notifMenuLeft = Math.max(10, Math.min(notifLeftCandidate, screenWidth - NOTIF_MENU_WIDTH - 10));
+    // Gráfico de Barras
+    const unsubscribeGrafico = onSnapshot(colRef, (snapshot) => {
+      const stockPorCategoria = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const tipo = data.tipo || 'Otros';
+        const stock = data.cantidad || 0;
+        stockPorCategoria[tipo] = (stockPorCategoria[tipo] || 0) + stock;
+      });
+      const dataFinal = Object.keys(stockPorCategoria).map((key) => ({
+        label: key,
+        value: stockPorCategoria[key],
+      }));
+      dataFinal.sort((a, b) => b.value - a.value);
+      setDatosGraficoBarras(dataFinal);
+      setLoadingGraficoBarras(false);
+    }, (error) => { setLoadingGraficoBarras(false); });
 
-  const markAllRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    
+    return () => { 
+      unsubscribeTotal(); 
+      unsubscribeTop(); 
+      unsubscribeGrafico();
+    };
   }, []);
-  const openNotif = useCallback(() => setNotifOpen(true), []);
-  const closeNotif = useCallback(() => setNotifOpen(false), []);
 
-  // Grid
-  const GAP = 14;
-  const NUM_COLS = 2;
-  const CARD_WIDTH = Math.floor((screenWidth - (GAP * (NUM_COLS + 1))) / NUM_COLS);
+  const displayName =
+    (user?.displayName && user.displayName.trim()) ||
+    (user?.providerData?.[0]?.displayName &&
+      user.providerData[0].displayName.trim()) ||
+    'Usuario';
+
+
+  const items = useMemo(() => [
+    { id: '1', icon: 'pricetags-sharp', titulo: 'Productos', screen: 'Productos' }, 
+    { id: '2', icon: 'calendar-sharp', titulo: 'Agenda', screen: 'Agenda' }, 
+    { id: '3', icon: 'people-sharp', titulo: 'Clientes', screen: 'Clientes' },
+    { id: '4D', icon: 'calculator-sharp', titulo: 'Servicios', screen: 'Servicios' },
+    { id: '5', icon: 'person-add-sharp', titulo: 'Proveedores', screen: 'Proveedores' },
+    { id: '6', icon: 'cart-sharp', titulo: 'Compras', screen: 'Compras' },
+  ], []); // Reducido a 6 para un grid perfecto de 3x2
+  
+  const handleLogout = useCallback(() => { 
+    Alert.alert('Cerrar sesión', '¿Querés cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cerrar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await signOut(auth);
+            // Vuelve al stack de autenticación
+            navigation.replace('Auth'); 
+          } catch (e) {
+            Alert.alert('Error al cerrar sesión', e?.message ?? 'Intenta nuevamente.');
+          }
+        },
+      },
+    ]);
+  }, [navigation]); // Añadido navigation
+  
+  const handleOpenScreen = useCallback((screenName) => { 
+    if (!screenName) {
+      Alert.alert('Próximamente', 'Esta sección aún no está disponible.');
+      return;
+    }
+    navigation.navigate(screenName);
+  }, [navigation]); // Añadido navigation
+  
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(() => { 
     setRefreshing(true);
+    // (Podrías re-llamar tus funciones de fetch aquí si no usaras onSnapshot)
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
-  const renderItem = ({ item }) => (
-    <Pressable
-      onPress={() => handleOpenScreen(item.screen)}
-      style={({ pressed }) => [
-        styles.card,
-        { width: CARD_WIDTH, margin: GAP / 2 },
-        pressed && { transform: [{ scale: 0.98 }], opacity: 0.95 },
-      ]}
-      android_ripple={{ color: '#2a2a2a' }}
-      accessibilityRole="button"
-      accessibilityLabel={item.titulo}
-    >
-      <Ionicons name={item.icon} size={38} color="#ff5b5b" style={styles.icono} />
-      <Text style={styles.tituloCard}>{item.titulo}</Text>
-      <Text style={styles.textoCard}>{item.texto}</Text>
-    </Pressable>
-  );
-
-  // ----- RENDER -----
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      {/* Header */}
-      <View
-        style={styles.header}
-        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
-      >
-        <View style={styles.headerLeft}>
-          <Text numberOfLines={2} style={styles.saludoTexto}>
-            {`Hola,\n${displayName}!`}
-          </Text>
-          <Text style={styles.subtituloHeader}>¿Qué querés hacer hoy?</Text>
-        </View>
-
-        {/* Campana de Notificaciones */}
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+      
+      {/* HEADER (con botón de menú) */}
+      <View style={styles.header}>
         <Pressable
-          style={styles.bellWrapper}
-          onPress={notifOpen ? closeNotif : openNotif}
-          onLayout={(e) => setBellAnchor(e.nativeEvent.layout)}
-          accessibilityRole="button"
-          accessibilityLabel="Notificaciones"
-          hitSlop={8}
+          style={styles.iconBtn}
+          onPress={() => navigation.openDrawer()} // <-- ABRE EL MENÚ
         >
-          <Ionicons name="notifications-outline" size={24} color="#fff" />
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : String(unreadCount)}</Text>
-            </View>
-          )}
+          <Ionicons name="menu-sharp" size={26} color={COLORES.textoSecundario} />
         </Pressable>
 
         {/* Avatar + estado online (siempre visible) */}
         <Pressable
           style={styles.avatarWrap}
           onPress={() => navigation.navigate('Perfil')}
-          onLongPress={() => navigation.navigate('Configuracion')}
-          accessibilityRole="imagebutton"
-          accessibilityLabel="Abrir perfil"
-          hitSlop={6}
+          style={styles.avatarWrap}
         >
           {user?.photoURL ? (
             <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
           ) : (
             <View style={styles.avatarFallback}>
-              <Ionicons name="person-circle" size={44} color="#fff" />
+              <Ionicons name="person" size={24} color={COLORES.textoPrincipal} />
             </View>
           )}
-          <View style={styles.onlineDot} />
         </Pressable>
+        
+        <View style={styles.headerLeft}>
+          <Text style={styles.saludoTextoHola}>¡Bienvenido,</Text>
+          <Text style={styles.saludoTextoNombre}>{displayName}</Text>
+        </View>
+
+        <Pressable style={styles.iconBtn} onPress={() => Alert.alert('Notificaciones', 'Aún no tienes notificaciones.')}>
+          <Ionicons name="notifications-outline" size={24} color={COLORES.textoSecundario} />
+        </Pressable>
+        
       </View>
 
-      {/* Body */}
+      
       <View style={styles.body}>
-        {loading ? (
-          <View style={[styles.center, { paddingTop: 24 }]}>
-            <ActivityIndicator size="large" color="#ceebb3ff" />
-            <Text style={styles.loadingText}>Cargando...</Text>
+        {loading || loadingTopProductos || loadingGraficoBarras ? ( 
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={COLORES.acentoPrincipal} />
           </View>
         ) : error ? (
-          <View style={[styles.center, { paddingTop: 24, paddingHorizontal: 24 }]}>
-            <Text style={styles.errorText}>Ocurrió un error al obtener el usuario.</Text>
-            <Text style={styles.errorDetails}>{String(error?.message ?? '')}</Text>
-            <Pressable
-              onPress={() => navigation.replace('Login')}
-              style={({ pressed }) => [styles.retryButton, pressed && { opacity: 0.7 }]}
-            >
-              <Text style={styles.retryText}>Ir al Login</Text>
-            </Pressable>
+          <View style={styles.center}>
+            <Text style={styles.errorText}>Error al cargar datos</Text>
           </View>
         ) : (
-          <>
-            <Text style={styles.tituloBody}>Acceso Rápido</Text>
-            <FlatList
-              data={items}
-              keyExtractor={(it) => it.id}
-              renderItem={renderItem}
-              numColumns={NUM_COLS}
-              contentContainerStyle={styles.grid}
-              columnWrapperStyle={{ justifyContent: 'space-between' }}
-              showsVerticalScrollIndicator={false}
-              initialNumToRender={6}
-              removeClippedSubviews
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
-              }
-            />
-          </>
+          <FlatList
+            data={[]}
+            keyExtractor={() => 'main'}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={COLORES.acentoPrincipal}
+              />
+            }
+            ListHeaderComponent={
+              <RenderDashboardHeader
+                totalProductos={totalProductos}
+                loadingProductos={loadingProductos}
+                topProductos={topProductos}
+                loadingTopProductos={loadingTopProductos}
+                datosGraficoBarras={datosGraficoBarras}
+                loadingGraficoBarras={loadingGraficoBarras}
+                items={items}
+                handleOpenScreen={handleOpenScreen}
+              />
+            }
+          />
         )}
       </View>
 
@@ -272,128 +424,172 @@ export default function Home({ navigation }) {
   );
 }
 
+// --- ESTILOS PRINCIPALES (con botón de menú) ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
-
-  // Header
+  container: {
+    flex: 1,
+    backgroundColor: COLORES.fondo, // Fondo negro sólido
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1c1c1e',
-    borderBottomColor: '#2a2a2a',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: COLORES.fondo, // Integrado al fondo
+    borderBottomWidth: 1, // Borde sutil
+    borderBottomColor: COLORES.superficie,
   },
-  headerLeft: { flex: 1, paddingRight: 8, paddingTop: 30 },
-  saludoTexto: { fontSize: 22, fontWeight: '800', color: '#fff', lineHeight: 26 },
-  subtituloHeader: { fontSize: 13, color: '#9a9a9a', marginTop: 4 },
-
-  // Bell
-  bellWrapper: { marginRight: 12, padding: 6 },
-  badge: {
-    position: 'absolute',
-    top: 2,
-    right: 0,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#ff3b30',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
+  iconBtn: {
+    marginRight: 10, // Ajuste de margen
+    padding: 4,
   },
-  badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-
-  // Avatar + online
   avatarWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#3a3a3a',
-    marginLeft: 4,
-    position: 'relative',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORES.superficie,
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarImage: { width: 44, height: 44, borderRadius: 22 },
-  avatarFallback: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  onlineDot: {
-    position: 'absolute',
-    right: -1,
-    bottom: -1,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#34C759', // verde iOS
-    borderWidth: 2,
-    borderColor: '#1c1c1e', // aro para separarlo del avatar
-  },
-
-  // Body
-  body: { flex: 1, backgroundColor: '#121212', paddingTop: 10, paddingBottom: 12 },
-  tituloBody: { fontSize: 18, fontWeight: '700', color: '#fff', paddingHorizontal: 16, marginBottom: 10 },
-  grid: { paddingHorizontal: 12, paddingBottom: 24 },
-
-  // Cards
-  card: {
-    height: 190,
-    backgroundColor: '#1e1e1e',
     borderWidth: 1,
-    borderColor: '#2a2a2a',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
+    borderColor: COLORES.superficie,
+    marginLeft: 10, // Margen añadido
   },
-  icono: { marginBottom: 10 },
-  tituloCard: { fontSize: 16, fontWeight: '700', color: '#fff', textAlign: 'center', marginBottom: 8 },
-  textoCard: { fontSize: 12, color: '#bcd8e6', textAlign: 'center', lineHeight: 16, paddingHorizontal: 12 },
+  avatarImage: { width: 40, height: 40, borderRadius: 20 },
+  avatarFallback: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  headerLeft: { flex: 1, marginLeft: 12 },
+  saludoTextoHola: {
+    fontSize: 14,
+    color: COLORES.textoSecundario,
+  },
+  saludoTextoNombre: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORES.textoPrincipal,
+  },
+  body: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 },
+  errorText: { color: COLORES.acentoPrincipal, fontWeight: '600' },
+});
 
-  // Menú Notificaciones (HEADER)
-  notifMenuContainer: { position: 'absolute' },
-  notifMenu: {
-    backgroundColor: '#1f1f1f',
-    borderRadius: 16,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 12,
-    maxHeight: 360,
+// --- ESTILOS DEL DASHBOARD (Rediseñados) ---
+const dashboardStyles = StyleSheet.create({
+  dashboardContainer: {
+    width: '100%',
+    paddingBottom: 40,
   },
-  notifHeader: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  tituloSeccion: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORES.textoPrincipal,
+    paddingHorizontal: 16,
+    marginTop: 28,
+    marginBottom: 16,
+  },
+  
+  // 1. Estilos de Estadísticas (NUEVO DISEÑO)
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    backgroundColor: COLORES.superficie,
+    borderRadius: 16,
+    marginHorizontal: 16,
+    padding: 20,
+  },
+  statCelda: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValor: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORES.textoPrincipal,
+    marginTop: 8,
+  },
+  statTitulo: { 
+    fontSize: 12, 
+    color: COLORES.textoSecundario,
+    marginTop: 4,
+  },
+  
+  // 2. Estilo para el contenedor del gráfico
+  graficoContainer: {
+    backgroundColor: COLORES.superficie,
+    borderRadius: 16,
+    marginHorizontal: 16,
+    padding: 16,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+
+  // 3. Estilos de Top Productos
+  topProductoList: {
+    paddingHorizontal: 16,
+  },
+  topProductoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: COLORES.superficie,
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 10,
   },
-  notifTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  markAll: { color: '#97c5df', fontSize: 12, fontWeight: '600' },
+  topProductoImagen: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    marginRight: 12,
+    backgroundColor: COLORES.fondo, 
+  },
+  topProductoInfo: {
+    flex: 1, 
+    justifyContent: 'center',
+  },
+  topProductoNombre: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORES.textoPrincipal,
+  },
+  topProductoStock: {
+    fontSize: 14,
+    color: COLORES.textoSecundario,
+    marginTop: 4,
+  },
+  topProductoPrecio: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORES.acentoPrincipal,
+    marginLeft: 10,
+  },
 
-  notifItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#2a2a2a',
+  // 4. Estilos de Accesos Rápidos (NUEVO GRID)
+  accesosGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#ff3b30', marginRight: 8 },
-  notifItemTitle: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  notifItemBody: { color: '#ddd', fontSize: 12, marginTop: 2 },
-  notifTime: { color: '#aaa', fontSize: 11, marginTop: 6, textAlign: 'right' },
+  accesoBoton: {
+    width: '30%', // 3 columnas
+    backgroundColor: COLORES.superficie,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  accesoIconoBg: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  accesoTitulo: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORES.textoPrincipal,
+    textAlign: 'center',
+  },
 });
