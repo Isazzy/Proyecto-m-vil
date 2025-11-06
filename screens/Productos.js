@@ -1,24 +1,88 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, ActivityIndicator,
-  TouchableOpacity, Alert, RefreshControl
+  TouchableOpacity, Alert, RefreshControl,
+  Image, 
+  SafeAreaView, // --- NUEVO ---
+  StatusBar, // --- NUEVO ---
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db, storage } from '../src/config/firebaseConfig';
+import { db } from '../src/config/firebaseConfig'; 
+
+// --- NUEVA PALETA DE COLORES "NEÓN OSCURO" ---
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
+  textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
+  textoSecundario: '#A0A0A0', // Gris neutral
+  
+  acentoPrincipal: '#FB5B5B', // Tu color
+  acentoAzul: '#5B5BFB',     // Triádica
+  acentoVerde: '#5BFB5B',   // Triádica
+};
+
+const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje'];
+
+// --- Componente de Card (Rediseñado) ---
+const ProductoCard = ({ item, navigation, onEliminar }) => {
+  
+  const handleVer = () => navigation.navigate('VerProducto', { item });
+  const handleEditar = () => navigation.navigate('EditarProducto', { item });
+
+  return (
+    <View style={styles.card}>
+      <View 
+        style={[
+          styles.disponibilidadBadge,
+          item.cantidad > 0 ? styles.disponible : styles.agotado
+        ]}
+      >
+        <Text style={styles.disponibilidadTexto}>
+          {item.cantidad > 0 ? 'Disponible' : 'Agotado'}
+        </Text>
+      </View>
+      
+      <TouchableOpacity onPress={handleVer}>
+        <Image
+          source={item.imagen ? { uri: item.imagen } : require('../assets/placeholder.png')} 
+          style={styles.cardImage}
+        />
+      </TouchableOpacity>
+
+      <View style={styles.cardInfo}>
+        <Text style={styles.nombre} numberOfLines={1}>{item.nombre}</Text>
+        <Text style={styles.precio}>${item.precio}</Text>
+        <Text style={styles.stock}>Stock: {item.cantidad}</Text>
+      </View>
+
+      <View style={styles.actions}>
+        <TouchableOpacity onPress={handleVer}>
+          <Ionicons name="eye-outline" size={22} color={COLORES.acentoAzul} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleEditar}>
+          <Ionicons name="create-outline" size={22} color={COLORES.acentoVerde} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onEliminar(item.id)}>
+          <Ionicons name="trash-outline" size={22} color={COLORES.acentoPrincipal} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 
-const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Barbería'];
-
+// --- Componente Principal ---
 export default function Productos({ navigation }) {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
 
+  // (Lógica de fetchProductos, useEffect, onRefresh, handleEliminar se mantiene igual)
   const fetchProductos = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!refreshing) setLoading(true);
       const snapshot = await getDocs(collection(db, 'productos'));
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProductos(data);
@@ -28,11 +92,19 @@ export default function Productos({ navigation }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshing]);
 
   useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchProductos();
+    });
+    return unsubscribe;
+  }, [fetchProductos, navigation]);
+  
+  const onRefresh = () => {
+    setRefreshing(true);
     fetchProductos();
-  }, [fetchProductos]);
+  }
 
   const handleEliminar = async (id) => {
     Alert.alert(
@@ -56,128 +128,219 @@ export default function Productos({ navigation }) {
       ? productos
       : productos.filter(p => p.tipo === tipoFiltro);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.nombre}>{item.nombre}</Text>
-        <Text style={styles.descripcion}>Tipo: {item.tipo}</Text>
-        <Text style={styles.precio}>${item.precio} — Cant: {item.cantidad}</Text>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity onPress={() => navigation.navigate('VerProducto', { item })}>
-          <Ionicons name="eye-outline" size={22} color="#97c5df" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('EditarProducto', { item })}>
-          <Ionicons name="create-outline" size={22} color="#ffd166" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleEliminar(item.id)}>
-          <Ionicons name="trash-outline" size={22} color="#ff3b30" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
-    <View style={styles.container}>
+    // --- CAMBIO: Contenedor principal ---
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+
+      {/* Título de la Sección */}
       <Text style={styles.titulo}>Productos</Text>
 
-      {/* Filtros */}
-      <View style={styles.filtros}>
-        {tipos.map((tipo) => (
-          <TouchableOpacity
-            key={tipo}
-            style={[
-              styles.filtroBtn,
-              tipoFiltro === tipo && styles.filtroActivo,
-            ]}
-            onPress={() => setTipoFiltro(tipo)}
-          >
-            <Text
+      {/* Filtros (Usando FlatList horizontal para mejor UI) */}
+      <View>
+        <FlatList
+          data={tipos}
+          keyExtractor={(item) => item}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtrosContainer}
+          renderItem={({ item }) => (
+            <TouchableOpacity
               style={[
-                styles.filtroText,
-                tipoFiltro === tipo && styles.filtroTextActivo,
+                styles.filtroBtn,
+                tipoFiltro === item && styles.filtroActivo,
               ]}
+              onPress={() => setTipoFiltro(item)}
             >
-              {tipo}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.filtroText,
+                  tipoFiltro === item && styles.filtroTextActivo,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
       </View>
 
-      {/* Botón agregar */}
+      {/* Botón agregar (CTA Principal) */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AgregarProducto')}
       >
-        <Ionicons name="add-circle-outline" size={22} color="#fff" />
-        <Text style={{ color: '#fff', marginLeft: 6 }}>Agregar producto</Text>
+        <Ionicons name="add" size={22} color={COLORES.textoPrincipal} />
+        <Text style={styles.addButtonText}>Agregar producto</Text>
       </TouchableOpacity>
 
+      {/* Lista de Productos */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#97c5df" />
+          <ActivityIndicator size="large" color={COLORES.acentoPrincipal} />
         </View>
       ) : (
         <FlatList
+          style={{ flex: 1 }}
           data={productosFiltrados}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) => (
+            <ProductoCard 
+              item={item} 
+              navigation={navigation} 
+              onEliminar={handleEliminar} 
+            />
+          )}
+          numColumns={2}
+          contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={fetchProductos} tintColor="#fff" />
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh} 
+              tintColor={COLORES.acentoPrincipal} 
+            />
           }
           ListEmptyComponent={<Text style={styles.emptyText}>No hay productos.</Text>}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
+// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
-  titulo: { fontSize: 22, fontWeight: '800', color: '#fff', padding: 16 },
-  filtros: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginHorizontal: 10,
-    marginBottom: 10,
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORES.fondo, // Negro sólido
+  },
+  titulo: { 
+    fontSize: 22, // Coherente con Home
+    fontWeight: 'bold', 
+    color: COLORES.textoPrincipal, 
+    paddingHorizontal: 16,
+    paddingTop: 16, // Espacio superior
+    paddingBottom: 16,
+  },
+  // --- Estilos de Filtros (Rediseñados) ---
+  filtrosContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   filtroBtn: {
-    backgroundColor: '#1f1f1f',
+    backgroundColor: COLORES.superficie,
     borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    margin: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: COLORES.superficie,
   },
-  filtroActivo: { backgroundColor: '#97c5df' },
-  filtroText: { color: '#fff', fontSize: 13 },
-  filtroTextActivo: { color: '#000', fontWeight: '700' },
+  filtroActivo: { 
+    backgroundColor: COLORES.acentoPrincipal, // Tu color
+    borderColor: COLORES.acentoPrincipal,
+  },
+  filtroText: { 
+    color: COLORES.textoPrincipal, 
+    fontSize: 13,
+  },
+  filtroTextActivo: { 
+    color: COLORES.textoPrincipal, 
+    fontWeight: '700',
+  },
+  // --- Estilo Botón Agregar (Rediseñado) ---
   addButton: {
     flexDirection: 'row',
-    backgroundColor: '#1f1f1f',
-    padding: 10,
+    backgroundColor: COLORES.acentoAzul, // Acento Azul para CTA
+    padding: 12,
     marginHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 16, // Coherente
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
+  },
+  addButtonText: {
+    color: COLORES.textoPrincipal,
+    marginLeft: 8,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  center: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  emptyText: { 
+    color: COLORES.textoSecundario, 
+    textAlign: 'center', 
+    marginTop: 40 
+  },
+
+  // --- Estilos de Card (Rediseñados) ---
+  listContainer: {
+    paddingHorizontal: 8,
+    paddingBottom: 16,
   },
   card: {
-    backgroundColor: '#1f1f1f',
-    borderRadius: 10,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    backgroundColor: COLORES.superficie, // Fondo de tarjeta
+    borderRadius: 16, // Coherente
+    flex: 1,
+    margin: 8,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: COLORES.superficie, // Borde sutil
   },
-  nombre: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  descripcion: { color: '#ccc', fontSize: 13, marginTop: 4 },
-  precio: { color: '#97c5df', fontSize: 14, fontWeight: '700', marginTop: 6 },
-  actions: { flexDirection: 'row', gap: 10 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { color: '#aaa', textAlign: 'center', marginTop: 40 },
+  cardImage: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover',
+    backgroundColor: COLORES.fondo, // Fondo para placeholder
+  },
+  cardInfo: {
+    padding: 12,
+  },
+  nombre: { 
+    color: COLORES.textoPrincipal, 
+    fontSize: 16, 
+    fontWeight: '600' 
+  },
+  precio: { 
+    color: COLORES.acentoPrincipal, // Tu color
+    fontSize: 15, 
+    fontWeight: '700', 
+    marginTop: 6 
+  },
+  stock: { 
+    color: COLORES.textoSecundario, 
+    fontSize: 13, 
+    marginTop: 4 
+  },
+  actions: { 
+    flexDirection: 'row', 
+    gap: 10,
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderColor: COLORES.fondo, // Divisor negro
+  },
+  // --- Estilos de Badge (Rediseñados) ---
+  disponibilidadBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    zIndex: 1,
+  },
+  disponible: {
+    backgroundColor: COLORES.acentoVerde, // Verde neón
+  },
+  agotado: {
+    backgroundColor: COLORES.acentoPrincipal, // Rojo neón
+  },
+  disponibilidadTexto: {
+    color: '#000000', // Texto negro para alto contraste con neón
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
 });

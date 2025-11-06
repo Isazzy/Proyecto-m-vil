@@ -3,11 +3,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/config/firebaseConfig';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as Font from "expo-font";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-// Screens
-import Perfil from './screens/Perfil'; // ajustá la ruta según tu estructura
 
+import Perfil from './screens/Perfil'; 
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import Home from './screens/Home';
@@ -23,6 +24,7 @@ import VerProducto from './screens/VerProducto';
 
 
 const Stack = createStackNavigator();
+
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -114,9 +116,9 @@ export default function App() {
           component={DrawerNavigator}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="AgregarProducto" component={AgregarProducto} />
-        <Stack.Screen name="EditarProducto" component={EditarProducto} />
-        <Stack.Screen name="VerProducto" component={VerProducto} />
+        <Stack.Screen name="AgregarProducto" component={AgregarProducto}  options={{ headerShown: false }}/>
+        <Stack.Screen name="EditarProducto" component={EditarProducto} options={{ headerShown: false }}/>
+        <Stack.Screen name="VerProducto" component={VerProducto} options={{ headerShown: false }}/>
 
       </Stack.Navigator>
         

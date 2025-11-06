@@ -23,7 +23,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
-
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState(null);
@@ -60,7 +59,7 @@ export default function ForgotPasswordScreen({ navigation }) {
     sendPasswordResetEmail(auth, email)
       .then(() => {
         setTypeMessage("success");
-        setMessage("Si el correo está registrado, recibirás un enlace para restablecer la contraseña.");
+        setMessage("Si el correo está registrado, le enviaremos un enlace para restablecer la contraseña.\nRevise su bandeja de entrada y Spam.");
       })
       .catch((error) => {
         setTypeMessage("error");
@@ -125,7 +124,7 @@ export default function ForgotPasswordScreen({ navigation }) {
             <Text style={styles.signupText}>
               ¿Recordaste tu contraseña?
               <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-                {' '}inicia sesiòn 
+                {' '}inicia sesión 
               </Text>
             </Text>
 

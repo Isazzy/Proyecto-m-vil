@@ -75,7 +75,7 @@ export default function Login({ navigation }) {
     if (typeMessage === "error" && email && password) setMessage(null);
   }, [email, password]);
 
-  // ✅ Manejar login
+  
   const handleLogin = async () => {
     if (!email || !password) {
       setTypeMessage("error");
@@ -139,13 +139,12 @@ export default function Login({ navigation }) {
           ¡Bienvenido de nuevo!
         </Animated.Text>
 
-        {/* 🔴 Mensajes globales de error o éxito */}
+        
         <View style={{ height: height * 0.03, justifyContent: "center", textAlign: "center", flexDirection: 'row' }}>
           {message && <Text style={[styles.message, typeMessage === "error" && styles.errorMessage]}>{message}</Text>}
         </View>
 
         <View style={styles.formBox}>
-          {/* Correo */}
           <View style={[styles.inputContainer, emailError && { borderColor: '#ff5b5b' }]}>
             <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
             <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
@@ -171,7 +170,6 @@ export default function Login({ navigation }) {
             />
           </View>
 
-          {/* Contraseña */}
           <View style={styles.inputContainer}>
             <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
             <Animated.Text style={passLabelStyle}>Contraseña</Animated.Text>
@@ -303,7 +301,7 @@ const styles = StyleSheet.create({
     fontSize: width * 0.032,
   },
   forgot: {
-    color: '#c7d9e4ff',
+    color: '#ff5b5b',
     fontSize: width * 0.030,
   },
   button: {
