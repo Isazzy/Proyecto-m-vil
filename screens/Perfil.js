@@ -1,9 +1,9 @@
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Image,
+  View,//Género-- apartado de seguridad va "Cambiar Perfil" y los demas configuración
+  Text,//Se deben mostrar al inicio el email, nombre y apellido y despues completas la siguientes informaciones de "Editar Perfil"
+  StyleSheet,//Debe tener las mismas validaciones que el registro ; Validar DNI a nivel nacional; Genero: Otros; Prefiero no decirlo
+  Dimensions,//Validaciones de fecha de nacimiento. alert de perfil; que toda la aplicacion sea consistente;
+  Image,//
   Modal,
   ScrollView,
   TouchableOpacity,
@@ -14,7 +14,7 @@ import {
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import AnimatedReanimated, { FadeInDown } from 'react-native-reanimated';
-import { auth, firestore } from '../src/config/firebaseConfig';
+import { auth, db } from '../src/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import ChangePasswordForm from './ChangePasswordForm';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,13 +24,13 @@ const { width, height } = Dimensions.get('window');
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const slideAnim = useRef(new Animated.Value(0)).current; // para animar arrastre
+  const slideAnim = useRef(new Animated.Value(0)).current; 
 
   useEffect(() => {
     const cargarUsuario = async () => {
       if (!auth.currentUser) return;
-      try {
-        const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+      try { 
+        const userDocRef = doc(db, 'users', auth.currentUser.uid);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) setUserData(docSnap.data());
       } catch (error) {
@@ -40,7 +40,6 @@ export default function Profile({ navigation }) {
     cargarUsuario();
   }, []);
 
-  // === PanResponder para permitir arrastrar hacia abajo ===
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
@@ -98,12 +97,31 @@ export default function Profile({ navigation }) {
           source={require('../assets/fondoPerfil.jpg')}
           style={styles.fondo}
         />
+        
+        <View style={styles.topBar}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.navigate('Home')}
+            accessibilityRole="button"
+            accessibilityLabel="Volver al inicio"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <FontAwesome name="chevron-left" size={18} color="#0b0a0aff" />
+          </TouchableOpacity>
+          
+        </View>
 
         <View style={styles.header}>
           <Image
-            source={{ uri: userData?.photoURL || 'https://via.placeholder.com/150' }}
+            source={
+              userData?.photoURL
+                ? { uri: userData.photoURL }
+                : require('../assets/icon.png')
+            }
             style={styles.profileImage}
           />
+
+
           <Text style={styles.name}>
             {userData?.nombre || ''} {userData?.apellido || ''}
           </Text>
@@ -257,4 +275,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
+  topBar: {
+  position: 'absolute',
+  top: 45,               
+  left: 16,
+  right: 16,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  zIndex: 10,
+},
 });

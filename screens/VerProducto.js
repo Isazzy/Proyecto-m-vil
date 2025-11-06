@@ -1,64 +1,125 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
-import { db, storage } from '../src/config/firebaseConfig';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Image, 
+  ScrollView, 
+  SafeAreaView, // --- NUEVO ---
+  StatusBar,    // --- NUEVO ---
+  Dimensions    // --- NUEVO ---
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // Para el placeholder
 
+// (Se eliminaron 'db' y 'storage' ya que no se usan en esta pantalla)
+
+// --- PALETA DE COLORES "NEÓN OSCURO" ---
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', 
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
+  acentoPrincipal: '#FB5B5B', 
+  acentoAzul: '#5B5BFB',
+};
+
+const { width } = Dimensions.get('window'); // Para hacer la imagen cuadrada
 
 export default function VerProducto({ route }) {
   const { item } = route.params;
 
   return (
-    <ScrollView style={styles.container}>
-      {item.imagen ? (
-        <Image source={{ uri: item.imagen }} style={styles.image} />
-      ) : (
-        <View style={styles.noImage}>
-          <Text style={{ color: '#777' }}>Sin imagen</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+      <ScrollView style={styles.container}>
+        {item.imagen ? (
+          <Image source={{ uri: item.imagen }} style={styles.image} />
+        ) : (
+          <View style={styles.noImage}>
+            {/* --- CAMBIO: Icono en placeholder --- */}
+            <Ionicons name="image-outline" size={60} color={COLORES.textoSecundario} />
+            <Text style={{ color: COLORES.textoSecundario, marginTop: 8 }}>Sin imagen</Text>
+          </View>
+        )}
+
+        {/* --- CAMBIO: Contenedor para el padding --- */}
+        <View style={styles.infoContainer}>
+          {/* --- CAMBIO: Jerarquía de texto --- */}
+          <Text style={styles.tipo}>{item.tipo || 'Sin Categoría'}</Text>
+          <Text style={styles.nombre}>{item.nombre}</Text>
+
+          {/* --- CAMBIO: Estilo de InfoBox --- */}
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Precio:</Text>
+            {/* --- CAMBIO: Estilo del precio --- */}
+            <Text style={[styles.value, styles.precioValue]}>${item.precio}</Text>
+          </View>
+
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Stock (Cantidad):</Text>
+            <Text style={styles.value}>{item.cantidad}</Text>
+          </View>
         </View>
-      )}
-
-      <Text style={styles.nombre}>{item.nombre}</Text>
-      <Text style={styles.tipo}>Tipo: {item.tipo}</Text>
-
-      <View style={styles.infoBox}>
-        <Text style={styles.label}>Precio:</Text>
-        <Text style={styles.value}>${item.precio}</Text>
-      </View>
-
-      <View style={styles.infoBox}>
-        <Text style={styles.label}>Cantidad:</Text>
-        <Text style={styles.value}>{item.cantidad}</Text>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
+// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212', padding: 16 },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORES.fondo,
+  },
   image: {
-    width: '100%',
-    height: 250,
-    borderRadius: 10,
-    marginBottom: 20,
+    width: width, // Ocupa todo el ancho
+    height: width, // Alto igual al ancho (cuadrado)
+    resizeMode: 'cover',
   },
   noImage: {
-    width: '100%',
-    height: 250,
-    borderRadius: 10,
-    backgroundColor: '#1f1f1f',
+    width: width,
+    height: width,
+    backgroundColor: COLORES.superficie, // Color de fondo de tarjeta
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
   },
-  nombre: { color: '#fff', fontSize: 22, fontWeight: '700', marginBottom: 8 },
-  tipo: { color: '#aaa', fontSize: 14, marginBottom: 20 },
+  infoContainer: {
+    padding: 16, // Padding para el texto
+    marginTop: 8,
+  },
+  nombre: { 
+    color: COLORES.textoPrincipal, 
+    fontSize: 26, 
+    fontWeight: 'bold', 
+    marginBottom: 20, // Más espacio después del título
+  },
+  tipo: { 
+    color: COLORES.acentoAzul, // Acento de color
+    fontSize: 16, 
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase', // Estilo
+  },
   infoBox: {
-    backgroundColor: '#1f1f1f',
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 10,
+    backgroundColor: COLORES.superficie, // Color de tarjeta
+    padding: 16,
+    borderRadius: 16, // Borde consistente
+    marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  label: { color: '#888', fontSize: 16 },
-  value: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  label: { 
+    color: COLORES.textoSecundario, 
+    fontSize: 16,
+  },
+  value: { 
+    color: COLORES.textoPrincipal, 
+    fontSize: 18, 
+    fontWeight: '600',
+  },
+  precioValue: {
+    color: COLORES.acentoPrincipal, // Tu color principal
+    fontWeight: 'bold',
+  },
 });

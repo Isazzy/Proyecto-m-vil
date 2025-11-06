@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
+import React, { useState, useEffect, useMemo } from 'react';
+import {//falta la configuracion de cloudinary, cree una nueva carpeta para la config de cloud
   ImageBackground,
   View,
   Text,
@@ -39,6 +39,7 @@ export default function SignUp({ navigation }) {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
+  const [isPasswordBlurred, setIsPasswordBlurred] = useState(false)
 
   const firstAnim = useState(new Animated.Value(0))[0];
   const lastAnim = useState(new Animated.Value(0))[0];
@@ -83,12 +84,14 @@ export default function SignUp({ navigation }) {
 
   const passwordRules = [
     { rule: /.{8,}/, label: "Al menos 8 carácteres" },
-    { rule: /[A-Z]/, label: "Una letra mayúscula" },
-    { rule: /[a-z]/, label: "Una letra minúscula" },
-    { rule: /[0-9]/, label: "Un número" },
+    { rule: /[A-Z]/, label: "Una letra mayúscula." },
+    { rule: /[a-z]/, label: "Una letra minúscula." },
+    { rule: /[0-9]/, label: "Un número." },
   ];
 
-  const passesAllRules = (pw) => passwordRules.every(r => r.rule.test(pw));
+  const isPasswordValid = useMemo (() =>{
+    return passwordRules.every(({rule}) => rule.test(password));
+  },[password]);
 
   useEffect(() => {
     if (typeMessage === "error" && (email || password || confirmPassword)) {
@@ -97,9 +100,20 @@ export default function SignUp({ navigation }) {
   }, [email, password, confirmPassword]);
 
   const handleSignUp = async () => {
+    
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setTypeMessage("error");
       setMessage("Todos los campos son obligatorios.");
+      return;
+    }
+    if (firstName.length < 2){
+      setTypeMessage("error");
+      setMessage("El nombre debe tener al menos 2 carácteres")
+      return;
+    }
+    if (lastName.length < 2){
+      setTypeMessage("error");
+      setMessage("El Apellido debe tener al menos 2 carácteres")
       return;
     }
 
@@ -114,11 +128,10 @@ export default function SignUp({ navigation }) {
       setMessage("Las contraseñas no coinciden.");
       return;
     }
-
-    if (!passesAllRules(password)) {
+    if (!isPasswordValid) {
       setTypeMessage("error");
-      setMessage("La contraseña debe cumplir con los requisitos.");
-      return;
+      setMessage("La contraseña debe cumplir con los requisitos.")
+      return
     }
 
     try {
@@ -136,9 +149,6 @@ export default function SignUp({ navigation }) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido:\n example@gmail.com";
           break;
-        case 'auth/weak-password':
-          errorMessage = "La contraseña es demasiado débil.";
-          break;
         case 'auth/network-request-failed':
           errorMessage = "Error de conexión, por favor intenta más tarde.";
           break;
@@ -151,11 +161,11 @@ export default function SignUp({ navigation }) {
 
   const passwordBorderColor =
     password.length === 0 ? '#FF5B5B' :
-      passesAllRules(password) ? '#4CAF50' : '#8d0000ff';
+      isPasswordValid ? '#4CAF50' : '#8d0000ff';
 
   const confirmPasswordBorderColor =
-    confirmPassword.length === 0 ? '#FF5B5B' :
-      confirmPassword === password ? '#4CAF50' : '#8d0000ff';
+    password.length === 0 ? '#FF5B5B' :
+      isPasswordValid ? '#4CAF50' : '#8d0000ff';
 
   return (
     <KeyboardAvoidingView
@@ -173,7 +183,7 @@ export default function SignUp({ navigation }) {
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
-          <Text style={styles.title}>Regístrate</Text>
+          <Text style={styles.title}>Crear Cuenta</Text>
 
           {/* Mensaje */}
           <View style={{ height: height * 0.02, justifyContent: "center", flexDirection: 'row', marginBottom: height * 0.03 }}>
@@ -199,6 +209,7 @@ export default function SignUp({ navigation }) {
                 <TextInput
                   style={styles.input}
                   value={firstName}
+                  maxLength={25}
                   onFocus={() => handleFocus(firstAnim)}
                   onBlur={() => handleBlur(firstAnim, firstName)}
                   placeholder=""
@@ -217,6 +228,7 @@ export default function SignUp({ navigation }) {
                 <TextInput
                   style={styles.input}
                   value={lastName}
+                  maxLength={25}
                   onFocus={() => handleFocus(lastAnim)}
                   onBlur={() => handleBlur(lastAnim, lastName)}
                   placeholder=""
@@ -261,6 +273,7 @@ export default function SignUp({ navigation }) {
               <TextInput
                 style={styles.input}
                 value={password}
+                maxLength={25}
                 onChangeText={(text) => {
                   setPassword(text);
                   if (!passwordTouched) setPasswordTouched(true);
@@ -272,6 +285,7 @@ export default function SignUp({ navigation }) {
                 onBlur={() => {
                   handleBlur(passAnim, password);
                   setPasswordFocused(false);
+                  setIsPasswordBlurred(true);
                 }}
                 secureTextEntry={!showPassword}
                 placeholder=""
@@ -282,10 +296,10 @@ export default function SignUp({ navigation }) {
             </View>
 
             {/* Reglas de contraseña */}
-            {passwordTouched && !passesAllRules(password) && passwordFocused && (
+            {passwordTouched && !isPasswordValid && passwordFocused && (
               <View style={styles.passwordRulesBox}>
-                <Text style={{ fontWeight: 'bold', color: "#f1e6e6ff" }}>
-                  La contraseña debe tener:
+                <Text style={{ fontSize: 11,fontWeight: 'bold', color: "#f1e6e6ff" }}>
+                  Requisitos:
                 </Text>
                 {passwordRules.map(({ rule, label }, index) => {
                   const passed = rule.test(password);
@@ -293,7 +307,7 @@ export default function SignUp({ navigation }) {
                     <View key={index} style={styles.ruleItem}>
                       <FontAwesome
                         name={passed ? "check-circle" : "times-circle"}
-                        size={14}
+                        size={12}
                         color={passed ? "#3a803cff" : "#a09898ff"}
                         style={{ marginRight: 6 }}
                       />
@@ -310,6 +324,11 @@ export default function SignUp({ navigation }) {
                 })}
               </View>
             )}
+            {isPasswordBlurred && !isPasswordValid && (
+              <Text style={{color: "red", marginTop: -20, marginBottom: 20, fontSize: 11}}>
+                La contraseña no cumple con los requisitos
+              </Text>
+            )}
 
             {/* Confirmar contraseña */}
             <View style={[styles.inputContainer, { borderBottomColor: confirmPasswordBorderColor, borderBottomWidth: 2 }]}>
@@ -318,6 +337,7 @@ export default function SignUp({ navigation }) {
               <TextInput
                 style={styles.input}
                 value={confirmPassword}
+                maxLength={25}
                 onChangeText={setConfirmPassword}
                 onFocus={() => handleFocus(confirmAnim)}
                 onBlur={() => handleBlur(confirmAnim, confirmPassword)}
@@ -338,7 +358,7 @@ export default function SignUp({ navigation }) {
                 ]}
               >
                 {confirmPassword === password
-                  ? "Las contraseñas coinciden"
+                  ? ""
                   : "Las contraseñas no coinciden"}
               </Text>
             )}

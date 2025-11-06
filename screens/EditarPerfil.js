@@ -8,7 +8,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Picker } from '@react-native-picker/picker';
 import { auth, firestore } from '../src/config/firebaseConfig';
 import { updateProfile } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 
 const { width, height } = Dimensions.get('window');
 
