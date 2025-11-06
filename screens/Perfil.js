@@ -24,7 +24,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import ChangePasswordForm from './ChangePasswordForm';
 import { LinearGradient } from 'expo-linear-gradient';
 import useUserDoc from '../src/config/hooks/useUserDoc';
-import { auth } from '../src/config/firebaseConfig';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -257,7 +257,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     elevation: 1,
-    alignSelf: 'stretch', 
+    alignSelf: 'stretch',
+  },
   infoText: { color: '#fff', fontSize: width * 0.045, marginBottom: 8 },
   
   //  ESTILOS PARA OPCIONES
