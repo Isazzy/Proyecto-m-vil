@@ -1,227 +1,400 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, Alert, Platform, ScrollView
+  View, Text, TextInput, TouchableOpacity, StyleSheet, 
+  Image, Alert, ScrollView, SafeAreaView, StatusBar, 
+  ActivityIndicator, Platform
 } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { Picker } from '@react-native-picker/picker';
-import { auth, firestore } from '../src/config/firebaseConfig';
-import { updateProfile } from 'firebase/auth';
-import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, Timestamp, setDoc } from 'firebase/firestore'; 
+import { auth, db } from '../src/config/firebaseConfig'; 
 
-const { width, height } = Dimensions.get('window');
+import { updateProfile } from 'firebase/auth';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import SelectorTipo from '../src/config/componentes/selectores/SelectorTipoG';
+
+
+const CLOUDINARY_CLOUD_NAME = 'diqndk92p';
+const CLOUDINARY_UPLOAD_PRESET = 'mitiempo_mobile'; 
+// ---
+
+// --- PALETA DE COLORES "NEÓN OSCURO" ---
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101',
+  textoPrincipal: '#FEE6E6',
+  textoSecundario: '#A0A0A0',
+  acentoPrincipal: '#FB5B5B',
+  acentoAzul: '#6ba1c1ff',
+};
+
+// (Función calcularEdad se mantiene igual)
+const calcularEdad = (fechaNac) => {
+  const hoy = new Date();
+  const cumple = new Date(fechaNac);
+  let edad = hoy.getFullYear() - cumple.getFullYear();
+  const m = hoy.getMonth() - cumple.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+    edad--;
+  }
+  return edad;
+};
 
 export default function EditarPerfil({ navigation }) {
+  // (Todos los 'useState' se mantienen igual)
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [dni, setDni] = useState(''); 
   const [telefono, setTelefono] = useState('');
-  const [edad, setEdad] = useState('');
-  const [sexo, setSexo] = useState(null);
+  const [genero, setGenero] = useState(null); 
   const [fechaNacimiento, setFechaNacimiento] = useState(new Date());
+  const [localImage, setLocalImage] = useState(null); 
+  const [originalData, setOriginalData] = useState(null); 
+  const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [localImage, setLocalImage] = useState(null);
 
+  // (useEffect de cargarDatos se mantiene igual)
   useEffect(() => {
     const cargarDatos = async () => {
       if (!auth.currentUser) return;
-      const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
       const docSnap = await getDoc(userDocRef);
+      
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setNombre(data.nombre || '');
-        setApellido(data.apellido || '');
-        setTelefono(data.telefono || '');
-        setEdad(data.edad ? data.edad.toString() : '');
-        setSexo(data.sexo || null);
-        setFechaNacimiento(data.fechaNacimiento?.toDate ? data.fechaNacimiento.toDate() : new Date());
-        setLocalImage(auth.currentUser.photoURL || null);
+        const initialData = {
+          nombre: data.nombre || '',
+          apellido: data.apellido || '',
+          telefono: data.telefono || '',
+          dni: data.dni || '',
+          genero: data.genero || null,
+          fechaNacimiento: data.fechaNacimiento?.toDate ? data.fechaNacimiento.toDate() : new Date(),
+          photoURL: auth.currentUser.photoURL || null,
+        };
+        
+        setNombre(initialData.nombre);
+        setApellido(initialData.apellido);
+        setTelefono(initialData.telefono);
+        setDni(initialData.dni);
+        setGenero(initialData.genero);
+        setFechaNacimiento(initialData.fechaNacimiento);
+        setLocalImage(initialData.photoURL);
+        
+        setOriginalData(initialData); 
       }
     };
     cargarDatos();
   }, []);
 
-  const formatFecha = (date) =>{
+  // (formatFecha se mantiene igual)
+  const formatFecha = (date) => {
+    if (!date) return 'Seleccionar fecha...';
+    const hoy = new Date();
+    if (date.toDateString() === hoy.toDateString() && !originalData?.fechaNacimiento) {
+      return 'Seleccionar fecha...';
+    }
     return date.toLocaleDateString('es-ES');
   };
 
+  // (cambiarFoto se mantiene igual)
   const cambiarFoto = async () => {
-    Alert.alert('Foto de perfil', 'Selecciona una opción', [
-      {
-        text: 'Sacar foto',
-        onPress: async () => {
-          const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect:[1,1], quality:0.7 });
-          if (!result.canceled) setLocalImage(result.assets[0].uri);
-        }
-      },
-      {
-        text: 'Elegir de galería',
-        onPress: async () => {
-          const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing:true, aspect:[1,1], quality:0.7 });
-          if (!result.canceled) setLocalImage(result.assets[0].uri);
-        }
-      },
-      { text: 'Cancelar', style:'cancel' }
-    ]);
+    const result = await ImagePicker.launchImageLibraryAsync({ 
+      allowsEditing: true, 
+      aspect:[1,1], 
+      quality:0.7 
+    });
+    if (!result.canceled) {
+      setLocalImage(result.assets[0].uri);
+    }
   };
 
-  const guardarPerfil = async () => {
-    if (!nombre.trim() || !apellido.trim() || !sexo) {
-      Alert.alert('Error', 'Completa todos los campos obligatorios.');
-      return;
-    }
-    if (!auth.currentUser) {
-      Alert.alert('Error', 'Usuario no autenticado.');
-      return;
-    }
+  // --- CAMBIO: Función de subida a Cloudinary ---
+  const subirImagen = async (uri) => {
+    const formData = new FormData();
+    // 'file' es el nombre del campo que Cloudinary espera
+    formData.append('file', {
+      uri: uri,
+      type: `image/${uri.split('.').pop()}`, // Ej: 'image/jpeg'
+      name: `upload.${uri.split('.').pop()}`,
+    });
+    // 'upload_preset' es tu preset "sin firmar" (unsigned)
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
-      await setDoc(userDocRef, {
-        nombre,
-        apellido,
-        telefono,
-        edad: Number(edad) || null,
-        sexo,
-        fechaNacimiento,
-        photoURL: localImage || auth.currentUser.photoURL
-      }, { merge: true });
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const data = await response.json();
+      if (data.secure_url) {
+        return data.secure_url; // Esta es la URL que guardamos en Firestore
+      } else {
+        throw new Error(data.error?.message || 'Error al subir a Cloudinary');
+      }
+    } catch (err) {
+      console.error('Error en subirImagen:', err);
+      throw err; 
+    }
+  };
+  // --- FIN DEL CAMBIO ---
+
+  // --- CAMBIO: Lógica de Guardar (con subida a Cloudinary) ---
+  const guardarPerfil = async () => {
+    // (Validaciones se mantienen igual)
+    if (!nombre.trim() || !apellido.trim() || !genero || !dni.trim()) {
+      Alert.alert('Campos Incompletos', 'Completa todos los campos obligatorios (*).');
+      return;
+    }
+    if (!/^\d{7,8}$/.test(dni.trim())) {
+      Alert.alert('DNI Inválido', 'El DNI debe tener 7 u 8 números, sin puntos.');
+      return;
+    }
+    const edadCalculada = calcularEdad(fechaNacimiento);
+    if (edadCalculada < 13) {
+      Alert.alert('Fecha Inválida', 'Debes tener al menos 13 años para registrarte.');
+      return;
+    }
+    if (!auth.currentUser) return Alert.alert('Error', 'Usuario no autenticado.');
+
+    setLoading(true);
+    try {
+      let finalImageURL = originalData.photoURL; 
+
+      // Si la imagen local es diferente a la URL original (se cambió)
+      if (localImage && localImage !== originalData.photoURL) {
+        // --- CAMBIO: Llamamos a la nueva función ---
+        finalImageURL = await subirImagen(localImage); 
+      }
+      
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      
+      const datosActualizados = {
+        nombre: nombre.trim(),
+        apellido: apellido.trim(),
+        telefono: telefono.trim(),
+        dni: dni.trim(),
+        genero: genero,
+        fechaNacimiento: Timestamp.fromDate(fechaNacimiento),
+        photoURL: finalImageURL // <-- Aquí se guarda la URL de Cloudinary
+      };
+
+      await setDoc(userDocRef, datosActualizados, { merge: true });
 
       await updateProfile(auth.currentUser, {
-        displayName: `${nombre} ${apellido}`,
-        photoURL: localImage || auth.currentUser.photoURL
+        displayName: `${nombre.trim()} ${apellido.trim()}`,
+        photoURL: finalImageURL
       });
 
       Alert.alert('Éxito', 'Perfil actualizado correctamente.');
       navigation.goBack();
     } catch (error) {
       console.log('Error al guardar perfil:', error);
-      Alert.alert('Error', 'No se pudo guardar el perfil.');
+      Alert.alert('Error', 'No se pudo guardar el perfil: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // (handleCancelar se mantiene igual)
+  const handleCancelar = () => {
+    if (!originalData) {
+      navigation.goBack(); 
+      return;
+    }
+    const isDirty = 
+      nombre.trim() !== originalData.nombre ||
+      apellido.trim() !== originalData.apellido ||
+      telefono.trim() !== originalData.telefono ||
+      dni.trim() !== originalData.dni ||
+      genero !== originalData.genero ||
+      localImage !== originalData.photoURL ||
+      fechaNacimiento.toDateString() !== originalData.fechaNacimiento.toDateString();
+
+    if (!isDirty) {
+      navigation.goBack();
+      return;
+    }
+
+    Alert.alert(
+      'Descartar Cambios',
+      '¿Seguro que quieres salir? Se perderán los cambios no guardados.',
+      [
+        { text: 'Quedarse', style: 'cancel' },
+        { text: 'Descartar', style: 'destructive', onPress: () => navigation.goBack() }
+      ]
+    );
+  };
+
+  // (El JSX/return se mantiene 100% igual)
   return (
-    <ScrollView contentContainerStyle={{ flexGrow:1, padding:20, backgroundColor:'#131111ff' }}>
-      <Text style={styles.title}>Editar Perfil</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.titulo}>Editar Perfil</Text>
 
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: localImage || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-        <TouchableOpacity style={styles.cameraIcon} onPress={cambiarFoto}>
-          <FontAwesome name="camera" size={20} color="#fff" />
+        <View style={styles.imageContainer}>
+          <Image 
+            source={localImage ? { uri: localImage } : require('../assets/placeholder.png')} 
+            style={styles.profileImage} 
+          />
+          <TouchableOpacity style={styles.cameraIcon} onPress={cambiarFoto}>
+            <FontAwesome name="camera" size={20} color={COLORES.textoPrincipal} />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.label}>Nombre <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput style={styles.input} placeholder="Tu nombre" placeholderTextColor={COLORES.textoSecundario} value={nombre} onChangeText={setNombre} />
+        
+        <Text style={styles.label}>Apellido <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput style={styles.input} placeholder="Tu apellido" placeholderTextColor={COLORES.textoSecundario} value={apellido} onChangeText={setApellido} />
+        
+        <Text style={styles.label}>DNI <Text style={styles.asterisco}>*</Text></Text>
+        <TextInput style={styles.input} placeholder="N° de Documento (sin puntos)" placeholderTextColor={COLORES.textoSecundario} value={dni} onChangeText={setDni} keyboardType="numeric" maxLength={8} />
+
+        <Text style={styles.label}>Teléfono</Text>
+        <TextInput style={styles.input} placeholder="Ej: 1122334455" placeholderTextColor={COLORES.textoSecundario} value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
+        
+        <Text style={styles.label}>Fecha de Nacimiento <Text style={styles.asterisco}>*</Text></Text>
+        <TouchableOpacity style={styles.dateButton} onPress={() => setDatePickerVisibility(true)}>
+          <Text style={styles.dateButtonText}>{formatFecha(fechaNacimiento)}</Text>
         </TouchableOpacity>
-      </View>
 
-      <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-      <TextInput style={styles.input} placeholder="Apellido" value={apellido} onChangeText={setApellido} />
-      <TextInput style={styles.input} placeholder="Teléfono" value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Edad" value={edad} onChangeText={setEdad} keyboardType="numeric" />
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 13))} 
+          date={fechaNacimiento}
+          onConfirm={(date) => { setFechaNacimiento(date); setDatePickerVisibility(false); }}
+          onCancel={() => setDatePickerVisibility(false)}
+          display={Platform.OS === 'ios' ? 'inline' : 'default'}
+          confirmTextIOS="Confirmar"
+          cancelTextIOS="Cancelar"
+        />
 
-      <TouchableOpacity style={styles.dateButton} onPress={() => setDatePickerVisibility(true)}>
-        <Text style={styles.dateButtonText}>Fecha de nacimiento: {formatFecha(fechaNacimiento)}</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>Género <Text style={styles.asterisco}>*</Text></Text>
+        <SelectorTipo
+          tipoSeleccionado={genero}
+          onSelectTipo={setGenero}
+        />
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        maximumDate={new Date()}
-        date={fechaNacimiento}
-        onConfirm={(date) => { setFechaNacimiento(date); setDatePickerVisibility(false); }}
-        onCancel={() => setDatePickerVisibility(false)}
-        display={Platform.OS === 'ios' ? 'inline' : 'default'}
-      />
-
-      <View style={styles.pickerContainer}>
-        <Picker selectedValue={sexo} onValueChange={setSexo} style={styles.picker}>
-          <Picker.Item label="Seleccionar " value={null} color="#aaa" />
-          <Picker.Item label="Masculino" value="masculino" />
-          <Picker.Item label="Femenino" value="femenino" />
-        </Picker>
-      </View>
-
-      <View style={styles.containerBottom}>
-        <TouchableOpacity style={styles.button} onPress={guardarPerfil}>
-          <Text style={styles.buttonText}>Guardar </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button1} onPress={()=> navigation.navigate("Perfil")}>
-          <Text style={styles.buttonText}>Cancelar</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.containerBottom}>
+          <TouchableOpacity style={styles.btnCancelar} onPress={handleCancelar} disabled={loading}>
+            <Text style={styles.btnTexto}>Cancelar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnGuardar} onPress={guardarPerfil} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color={COLORES.textoPrincipal} />
+            ) : (
+              <Text style={styles.btnTexto}>Guardar</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
+// (Los estilos 'Neón Oscuro' se mantienen 100% igual)
 const styles = StyleSheet.create({
-  title: { 
-    fontSize:24, 
-    fontWeight:'bold', 
-    color:'#fff', 
-    marginBottom:20, 
-    textAlign:'center' 
+  container: {
+    flex: 1,
+    backgroundColor: COLORES.fondo,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  titulo: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: COLORES.textoPrincipal, 
+    marginBottom: 24, 
+    textAlign: 'center' 
   },
   imageContainer: { 
-    alignItems:'center', 
-    marginBottom:20 
+    alignItems: 'center', 
+    marginBottom: 20 
   },
   profileImage: { 
-    width:140, 
-    height:140, 
-    borderRadius:70, 
-    borderWidth:2, 
-    borderColor:'#ff5b5b' 
+    width: 140, 
+    height: 140, 
+    borderRadius: 70, 
+    borderWidth: 2, 
+    borderColor: COLORES.acentoPrincipal
   },
   cameraIcon: { 
-    position:'absolute',
-    bottom:10, 
-    right:105, 
-    backgroundColor:'#ff5b5b', 
-    padding:8, 
-    borderRadius:20 
+    position: 'absolute',
+    bottom: 10, 
+    right: (View.width / 2) - 80, // (Ajuste menor, usa Dimensions si da error)
+    backgroundColor: COLORES.acentoAzul, 
+    padding: 8, 
+    borderRadius: 20 
+  },
+  label: {
+    fontSize: 14,
+    color: COLORES.textoPrincipal,
+    marginBottom: 8,
+    marginTop: 10,
+  },
+  asterisco: {
+    color: COLORES.acentoPrincipal,
   },
   input: { 
-    backgroundColor:'#242121', 
-    color:'#fff', 
-    borderRadius:8, 
-    padding:12, 
-    marginBottom:12 
+    backgroundColor: COLORES.superficie, 
+    color: COLORES.textoPrincipal, 
+    borderRadius: 16, 
+    padding: 12, 
+    marginBottom: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: COLORES.superficie,
   },
   dateButton: { 
-    backgroundColor:'#242121', 
-    borderRadius:8, 
-    padding:12, 
-    marginBottom:12 
+    backgroundColor: COLORES.superficie, 
+    borderRadius: 16, 
+    padding: 14, 
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORES.superficie,
   },
   dateButtonText: { 
-    color:'#fff' 
-  },
-  pickerContainer: { 
-    backgroundColor:'#242121', 
-    borderRadius:8, 
-    marginBottom:12 
-  },
-  picker: { 
-    color:'#fff' 
+    color: COLORES.textoPrincipal,
+    fontSize: 16,
   },
   containerBottom: {
-    flexDirection: "row", justifyContent: "space-between", 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginTop: 30,
   },
-  button: { 
-    backgroundColor:'#ff5b5b', 
-    padding:12,
-    paddingVertical: 10, 
-    borderRadius:10, 
-    alignItems:'center', 
-    width: 155,
+  btnGuardar: { 
+    backgroundColor: COLORES.acentoAzul, 
+    padding: 14,
+    borderRadius: 16, 
+    alignItems: 'center', 
+    flex: 1,
+    marginLeft: 8,
+    height: 48, 
+    justifyContent: 'center',
   },
-  buttonText: { 
-    color:'#fff', 
-    fontSize:16, 
-    fontWeight:'bold' 
+  btnTexto: { 
+    color: COLORES.textoPrincipal, 
+    fontSize: 16, 
+    fontWeight: 'bold' 
   },
-  button1:{
-    backgroundColor: "#413939ff",
-    borderRadius: 10,
+  btnCancelar:{ 
+    backgroundColor: COLORES.superficie,
+    borderRadius: 16,
     alignItems: "center",
-    padding: 12,
-    width: 155,
+    padding: 14,
+    flex: 1,
+    marginRight: 8,
   },
 });

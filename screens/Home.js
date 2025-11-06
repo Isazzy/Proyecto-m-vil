@@ -25,11 +25,14 @@ const COLORES = {
   superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
   textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
   textoSecundario: '#A0A0A0', // Gris neutral
+  
   acentoPrincipal: '#FB5B5B', 
-  acentoAzul: '#5B5BFB',     // Triádica
+  acentoAzul: '#6ba1c1ff',     // Triádica
   acentoVerde: '#5BFB5B',   // Triádica
 };
-// Estadísticas
+
+
+//  Celda de Estadística 
 const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
   <View style={dashboardStyles.statCelda}>
     <Ionicons name={icono} size={24} color={colorIcono} />
@@ -37,7 +40,8 @@ const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
     <Text style={dashboardStyles.statTitulo}>{titulo}</Text>
   </View>
 );
-//  Top Producto
+
+//  Item de Top Producto 
 const TopProductoItem = ({ item }) => (
   <Pressable style={dashboardStyles.topProductoCard}>
     <Image
@@ -58,13 +62,13 @@ const TopProductoItem = ({ item }) => (
   </Pressable>
 );
 
-// Acceso Rápido
+//  Botón de Acceso Rápido 
 const AccesoRapidoItem = ({ item, onPress }) => (
   <Pressable
     onPress={() => onPress(item.screen)}
     style={({ pressed }) => [
       dashboardStyles.accesoBoton,
-      pressed && { backgroundColor: COLORES.superficie }, // Un sutil feedback
+      pressed && { backgroundColor: COLORES.superficie }, 
     ]}
   >
     <View style={[dashboardStyles.accesoIconoBg, { backgroundColor: COLORES.acentoAzul }]}>
@@ -86,15 +90,18 @@ const RenderDashboardHeader = ({
   handleOpenScreen,
 }) => {
   const { width: screenWidth } = useWindowDimensions();
+  
+  // Datos hardcodeados
   const ventasMes = '$ 128.500';
   const nuevosClientes = '12';
+
   // Config del gráfico
   const chartConfig = {
-    backgroundColor: '#29243eff',
+    backgroundColor: 'transparent',
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
-    color: (opacity = 1) => `rgba(251, 91, 91, ${opacity})`, //  acento principal
-    labelColor: (opacity = 1) => `rgba(160, 160, 160, ${opacity})`, // textoSecundario
+    color: (opacity = 1) => `rgba(251, 91, 91, ${opacity})`, 
+    labelColor: (opacity = 1) => `rgba(160, 160, 160, ${opacity})`, 
     strokeWidth: 2,
     barPercentage: 0.8,
     useShadows: false,
@@ -105,7 +112,7 @@ const RenderDashboardHeader = ({
 
   return (
     <View style={dashboardStyles.dashboardContainer}>
-      {/*  SECCIÓN DE ESTADÍSTICAS  */}
+      {/* SECCIÓN DE ESTADÍSTICAS  */}
       <Text style={dashboardStyles.tituloSeccion}>Resumen</Text>
       <View style={dashboardStyles.statsContainer}>
         <CeldaEstadistica
@@ -118,17 +125,17 @@ const RenderDashboardHeader = ({
           icono="cash-sharp"
           titulo="Ventas del Mes"
           valor={ventasMes}
-          colorIcono={COLORES.acentoVerde} 
+          colorIcono={COLORES.acentoVerde} // Verde
         />
         <CeldaEstadistica
           icono="people-sharp"
           titulo="Nuevos Clientes"
           valor={nuevosClientes}
-          colorIcono={COLORES.acentoAzul} 
+          colorIcono={COLORES.acentoAzul} // Azul
         />
       </View>
 
-      {/* 2. SECCIÓN GRÁFICO */}
+      {/*  SECCIÓN GRÁFICO DE BARRAS */}
       <Text style={dashboardStyles.tituloSeccion}>Inventario por Categoría</Text>
       <View style={dashboardStyles.graficoContainer}>
         {loadingGraficoBarras ? (
@@ -139,7 +146,7 @@ const RenderDashboardHeader = ({
               labels: datosGraficoBarras.map(d => d.label),
               datasets: [{ data: datosGraficoBarras.map(d => d.value) }]
             }}
-            width={screenWidth - 64} // Ancho
+            width={screenWidth - 64} 
             height={220}
             chartConfig={chartConfig}
             withVerticalLabels={true}
@@ -152,7 +159,7 @@ const RenderDashboardHeader = ({
         )}
       </View>
 
-      {/*  SECCIÓN TOP PRODUCTOS */}
+      {/*  TOP PRODUCTOS */}
       <Text style={dashboardStyles.tituloSeccion}>Top Productos</Text>
       <View style={dashboardStyles.topProductoList}>
         {loadingTopProductos ? (
@@ -164,7 +171,7 @@ const RenderDashboardHeader = ({
         )}
       </View>
 
-      {/*  SECCIÓN ACCESOS RÁPIDOS  */}
+      {/* ACCESOS RÁPIDOS  */}
       <Text style={dashboardStyles.tituloSeccion}>Accesos Rápidos</Text>
       <View style={dashboardStyles.accesosGridContainer}>
         {items.map((item) => (
@@ -175,7 +182,7 @@ const RenderDashboardHeader = ({
   );
 };
 
-export default function Home({ navigation }) {
+export default function Home({ navigation }) { 
   const [user, loading, error] = useAuthState(auth);
   
   const [totalProductos, setTotalProductos] = useState(0);
@@ -191,7 +198,8 @@ export default function Home({ navigation }) {
       setTotalProductos(snapshot.size);
       setLoadingProductos(false);
     }, (error) => { setLoadingProductos(false); });
-    // Top 3
+
+    //  Top 3
     const qTop = query(colRef, orderBy('nombre', 'asc'), limit(3));
     const unsubscribeTop = onSnapshot(qTop, (snapshot) => {
       const listaTop = [];
@@ -201,7 +209,8 @@ export default function Home({ navigation }) {
       setTopProductos(listaTop);
       setLoadingTopProductos(false);
     }, (error) => { setLoadingTopProductos(false); });
-    //  Gráfico de Barras
+
+    // Gráfico de Barras
     const unsubscribeGrafico = onSnapshot(colRef, (snapshot) => {
       const stockPorCategoria = {};
       snapshot.forEach((doc) => {
@@ -219,6 +228,7 @@ export default function Home({ navigation }) {
       setLoadingGraficoBarras(false);
     }, (error) => { setLoadingGraficoBarras(false); });
 
+    
     return () => { 
       unsubscribeTotal(); 
       unsubscribeTop(); 
@@ -231,14 +241,17 @@ export default function Home({ navigation }) {
     (user?.providerData?.[0]?.displayName &&
       user.providerData[0].displayName.trim()) ||
     'Usuario';
+
+
   const items = useMemo(() => [
-    { id: '1', icon: 'pricetags-sharp', titulo: 'Productos', screen: 'Productos' },
-    { id: '2', icon: 'calendar-sharp', titulo: 'Agenda', screen: 'Agenda' },
+    { id: '1', icon: 'pricetags-sharp', titulo: 'Productos', screen: 'Productos' }, 
+    { id: '2', icon: 'calendar-sharp', titulo: 'Agenda', screen: 'Agenda' }, 
     { id: '3', icon: 'people-sharp', titulo: 'Clientes', screen: 'Clientes' },
     { id: '4D', icon: 'calculator-sharp', titulo: 'Servicios', screen: 'Servicios' },
     { id: '5', icon: 'person-add-sharp', titulo: 'Proveedores', screen: 'Proveedores' },
     { id: '6', icon: 'cart-sharp', titulo: 'Compras', screen: 'Compras' },
-  ], []); 
+  ], []); // Reducido a 6 para un grid perfecto de 3x2
+  
   const handleLogout = useCallback(() => { 
     Alert.alert('Cerrar sesión', '¿Querés cerrar sesión?', [
       { text: 'Cancelar', style: 'cancel' },
@@ -248,32 +261,44 @@ export default function Home({ navigation }) {
         onPress: async () => {
           try {
             await signOut(auth);
-            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+            // Vuelve al stack de autenticación
+            navigation.replace('Auth'); 
           } catch (e) {
             Alert.alert('Error al cerrar sesión', e?.message ?? 'Intenta nuevamente.');
           }
         },
       },
     ]);
-  }, [navigation]);
+  }, [navigation]); // Añadido navigation
+  
   const handleOpenScreen = useCallback((screenName) => { 
     if (!screenName) {
       Alert.alert('Próximamente', 'Esta sección aún no está disponible.');
       return;
     }
     navigation.navigate(screenName);
-  }, [navigation]);
+  }, [navigation]); // Añadido navigation
+  
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => { 
     setRefreshing(true);
+    // (Podrías re-llamar tus funciones de fetch aquí si no usaras onSnapshot)
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
-      {/* HEADER */}
+      
+      {/* HEADER (con botón de menú) */}
       <View style={styles.header}>
+        <Pressable
+          style={styles.iconBtn}
+          onPress={() => navigation.openDrawer()} // <-- ABRE EL MENÚ
+        >
+          <Ionicons name="menu-sharp" size={26} color={COLORES.textoSecundario} />
+        </Pressable>
+
         <Pressable
           onPress={() => navigation.navigate('Perfil')}
           style={styles.avatarWrap}
@@ -286,20 +311,19 @@ export default function Home({ navigation }) {
             </View>
           )}
         </Pressable>
+        
         <View style={styles.headerLeft}>
           <Text style={styles.saludoTextoHola}>¡Bienvenido,</Text>
           <Text style={styles.saludoTextoNombre}>{displayName}</Text>
         </View>
-        <Pressable
-          style={styles.iconBtn}
-          onPress={() => Alert.alert('Notificaciones', 'Aún no tienes notificaciones.')}
-        >
+
+        <Pressable style={styles.iconBtn} onPress={() => Alert.alert('Notificaciones', 'Aún no tienes notificaciones.')}>
           <Ionicons name="notifications-outline" size={24} color={COLORES.textoSecundario} />
         </Pressable>
-        <Pressable style={styles.iconBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={COLORES.textoSecundario} />
-        </Pressable>
+        
       </View>
+
+      
       <View style={styles.body}>
         {loading || loadingTopProductos || loadingGraficoBarras ? ( 
           <View style={styles.center}>
@@ -318,7 +342,7 @@ export default function Home({ navigation }) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={COLORES.acentoPrincipal} // Ajustado
+                tintColor={COLORES.acentoPrincipal}
               />
             }
             ListHeaderComponent={
@@ -340,19 +364,24 @@ export default function Home({ navigation }) {
   );
 }
 
+// --- ESTILOS PRINCIPALES (con botón de menú) ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORES.fondo, 
+    backgroundColor: COLORES.fondo, // Fondo negro sólido
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORES.fondo, 
-    borderBottomWidth: 1, // Borde 
+    backgroundColor: COLORES.fondo, // Integrado al fondo
+    borderBottomWidth: 1, // Borde sutil
     borderBottomColor: COLORES.superficie,
+  },
+  iconBtn: {
+    marginRight: 10, // Ajuste de margen
+    padding: 4,
   },
   avatarWrap: {
     width: 40,
@@ -364,6 +393,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORES.superficie,
+    marginLeft: 10, // Margen añadido
   },
   avatarImage: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -377,26 +407,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORES.textoPrincipal,
   },
-  iconBtn: {
-    marginLeft: 10,
-    padding: 4,
-  },
   body: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 },
   errorText: { color: COLORES.acentoPrincipal, fontWeight: '600' },
 });
-// DASHBOARD 
+
+// --- ESTILOS DEL DASHBOARD (Rediseñados) ---
 const dashboardStyles = StyleSheet.create({
   dashboardContainer: {
     width: '100%',
     paddingBottom: 40,
   },
   tituloSeccion: {
-    fontSize: 20, // Más grande
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORES.textoPrincipal,
     paddingHorizontal: 16,
-    marginTop: 28, // Más espacio
+    marginTop: 28,
     marginBottom: 16,
   },
   
@@ -412,10 +439,10 @@ const dashboardStyles = StyleSheet.create({
   },
   statCelda: {
     alignItems: 'center',
-    flex: 1, // Para que ocupen espacio
+    flex: 1,
   },
   statValor: {
-    fontSize: 22, 
+    fontSize: 22,
     fontWeight: 'bold',
     color: COLORES.textoPrincipal,
     marginTop: 8,
@@ -426,9 +453,9 @@ const dashboardStyles = StyleSheet.create({
     marginTop: 4,
   },
   
-  // contenedor del gráfico
+  // 2. Estilo para el contenedor del gráfico
   graficoContainer: {
-    backgroundColor: COLORES.superficie, // Fondo de "tarjeta"
+    backgroundColor: COLORES.superficie,
     borderRadius: 16,
     marginHorizontal: 16,
     padding: 16,
@@ -436,7 +463,7 @@ const dashboardStyles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Top Productos
+  // 3. Estilos de Top Productos
   topProductoList: {
     paddingHorizontal: 16,
   },
@@ -445,11 +472,11 @@ const dashboardStyles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORES.superficie,
     padding: 12,
-    borderRadius: 16, 
+    borderRadius: 16,
     marginBottom: 10,
   },
   topProductoImagen: {
-    width: 60, 
+    width: 60,
     height: 60,
     borderRadius: 12,
     marginRight: 12,
@@ -460,7 +487,7 @@ const dashboardStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   topProductoNombre: {
-    fontSize: 16, 
+    fontSize: 16,
     fontWeight: '600',
     color: COLORES.textoPrincipal,
   },
@@ -472,11 +499,11 @@ const dashboardStyles = StyleSheet.create({
   topProductoPrecio: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORES.acentoPrincipal, 
+    color: COLORES.acentoPrincipal,
     marginLeft: 10,
   },
 
-  //  Estilos de Accesos Rápidos
+  // 4. Estilos de Accesos Rápidos (NUEVO GRID)
   accesosGridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -489,12 +516,12 @@ const dashboardStyles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: 12, // Espacio entre filas
+    marginBottom: 12,
   },
   accesoIconoBg: {
     width: 50,
     height: 50,
-    borderRadius: 25, 
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
