@@ -9,8 +9,7 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   ScrollView,
-  SafeAreaView, // --- NUEVO ---
-  StatusBar,    // --- NUEVO ---
+  StatusBar,    
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { auth } from '../src/config/firebaseConfig';
@@ -23,8 +22,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
-
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -39,20 +36,17 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [message, setMessage] = useState(null);
   const [typeMessage, setTypeMessage] = useState(null);
 
-  // Animación del label
   const emailAnim = useSharedValue(0);
   const emailLabelStyle = useAnimatedStyle(() => ({
     position: 'absolute',
-    left: 45, // Ajustado para el icono
+    left: 45, 
     top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),
     fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
     color: emailAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario,
     backgroundColor: COLORES.superficie, // Para tapar el borde
     paddingHorizontal: 4,
-    zIndex: 1, // Asegura que esté sobre el borde
+    zIndex: 1, 
   }));
-
-  // (underLineStyle ya no se usa)
 
   useEffect(() => {
     if ((typeMessage === "error" || typeMessage === "success") && email) {
@@ -82,7 +76,7 @@ export default function ForgotPasswordScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -108,8 +102,6 @@ export default function ForgotPasswordScreen({ navigation }) {
               {message}
             </Animated.Text>
           )}
-
-          {/* --- CAMBIO: Input rediseñado --- */}
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope" size={20} color={COLORES.textoSecundario} style={styles.icon} />
             <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
@@ -138,7 +130,7 @@ export default function ForgotPasswordScreen({ navigation }) {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -25,7 +25,7 @@ export default function SplashScreen({ navigation }) {
     }, 4000); 
     return () => clearTimeout(timer); 
   }, [navigation]);
-
+  
   return (
     <ImageBackground
       source={require('../assets/Splash.png')} 

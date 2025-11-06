@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Importa tus pantallas de autenticación
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
 import SplashScreen from "./screens/SplashScreen"
@@ -20,12 +19,8 @@ import { useFonts } from 'expo-font';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-
-  // --- LÓGICA PARA CARGAR LA FUENTE ---
   const [fontsLoaded] = useFonts({
-    // Asegúrate de que el nombre 'GreatVibes' coincida
     'GreatVibes': require('./assets/Fonts/Great_Vibes/GreatVibes-Regular.ttf'), 
-    // (Puedes cargar más fuentes aquí)
   });
 
   return (

@@ -1,15 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   superficie: '#190101',
   textoPrincipal: '#FEE6E6',
   textoSecundario: '#A0A0A0',
   acentoPrincipal: '#FB5B5B',
 };
-
-// Definimos los tipos aquí para que sean consistentes
 const tipos = ['Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros'];
 
 export default function SelectorTipo({ tipoSeleccionado, onSelectTipo }) {
@@ -20,10 +17,9 @@ export default function SelectorTipo({ tipoSeleccionado, onSelectTipo }) {
           key={t}
           style={[
             styles.tipoBtn,
-            // Compara el tipo seleccionado con 't'
             tipoSeleccionado === t && styles.tipoActivo 
           ]}
-          onPress={() => onSelectTipo(t)} // Llama a la función del componente padre
+          onPress={() => onSelectTipo(t)} 
         >
           <Text 
             style={[
@@ -38,27 +34,23 @@ export default function SelectorTipo({ tipoSeleccionado, onSelectTipo }) {
     </View>
   );
 }
-
-// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   tipoContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: 10,
-    // (Puedes ajustar 'justifyContent' si lo prefieres centrado)
-    // justifyContent: 'center', 
   },
   tipoBtn: {
     backgroundColor: COLORES.superficie,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
-    margin: 4, // Espacio entre botones
+    margin: 4, 
     borderWidth: 1,
     borderColor: COLORES.superficie,
   },
   tipoActivo: {
-    backgroundColor: COLORES.acentoPrincipal, // Tu color
+    backgroundColor: COLORES.acentoPrincipal, 
     borderColor: COLORES.acentoPrincipal,
   },
   tipoText: {

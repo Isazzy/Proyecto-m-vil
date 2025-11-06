@@ -18,8 +18,6 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get("window");
 const backgroundImage = require("../assets/fondo.png");
-
-// --- PALETA "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -39,7 +37,6 @@ const isValidEmailDomain = (email) => {
 };
 
 export default function SignUp({ navigation }) {
-  // (Tu lógica de 'useState' se mantiene intacta)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -53,7 +50,7 @@ export default function SignUp({ navigation }) {
   const [typeMessage, setTypeMessage] = useState(null);
   const [isPasswordBlurred, setIsPasswordBlurred] = useState(false)
 
-  // (Tu lógica de Animación se mantiene intacta)
+
   const firstAnim = useState(new Animated.Value(0))[0];
   const lastAnim = useState(new Animated.Value(0))[0];
   const emailAnim = useState(new Animated.Value(0))[0];
@@ -77,8 +74,6 @@ export default function SignUp({ navigation }) {
       }).start();
     }
   };
-
-  // --- CAMBIO: Solo colores ---
   const labelStyle = (anim) => ({
     position: 'absolute',
     left: 35,
@@ -107,14 +102,12 @@ export default function SignUp({ navigation }) {
     return passwordRules.every(({rule}) => rule.test(password));
   },[password]);
 
-  // (Tu 'useEffect' se mantiene intacto)
   useEffect(() => {
     if (typeMessage === "error" && (email || password || confirmPassword)) {
       setMessage(null);
     }
   }, [email, password, confirmPassword]);
 
-  // (Tu 'handleSignUp' se mantiene intacto)
   const handleSignUp = async () => {
     
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -154,7 +147,7 @@ export default function SignUp({ navigation }) {
       await createUserWithEmailAndPassword(auth, email, password);
       setTypeMessage("success");
       setMessage("Usuario registrado con éxito.");
-      navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // <-- Navega a Auth (Login)
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] }); 
     } catch (error) {
       let errorMessage = "Hubo un problema al registrar el usuario.";
 
@@ -406,7 +399,6 @@ export default function SignUp({ navigation }) {
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" (Solo colores) ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -423,17 +415,17 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.85)", // <-- CAMBIO: Fondo más oscuro
+    backgroundColor: "rgba(0, 0, 0, 0.85)", 
   },
   container2: {
-    borderRadius: 16, // <-- CAMBIO: Más redondeado
+    borderRadius: 16, 
     padding: width * 0.05,
     width: "100%",
-    backgroundColor: COLORES.superficie, // <-- CAMBIO: Color de superficie
+    backgroundColor: COLORES.superficie, 
     paddingVertical: height * 0.03,
   },
   title: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
+    color: COLORES.textoPrincipal, 
     fontSize: width * 0.1,
     fontWeight: 'bold',
     marginTop: height * 0.02,
@@ -460,26 +452,26 @@ const styles = StyleSheet.create({
   input: { 
     flex: 1, 
     height: height * 0.05, 
-    color: COLORES.textoPrincipal // <-- CAMBIO
+    color: COLORES.textoPrincipal 
   },
   button: {
-    backgroundColor: COLORES.acentoAzul, // <-- CAMBIO
-    paddingVertical: 14, // <-- CAMBIO
-    borderRadius: 16, // <-- CAMBIO
+    backgroundColor: COLORES.acentoAzul, 
+    paddingVertical: 14, 
+    borderRadius: 16, 
     alignItems: 'center',
     marginTop: height * 0.01,
   },
   buttonText: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
-    fontSize: 16, // <-- CAMBIO
+    color: COLORES.textoPrincipal, 
+    fontSize: 16, 
     fontWeight: 'bold',
   },
   LoginText: { 
     fontSize: width * 0.04, 
-    color: COLORES.textoPrincipal // <-- CAMBIO
+    color: COLORES.textoPrincipal 
   },
   logo: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
+    color: COLORES.textoPrincipal, 
     fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
     marginTop: height * 0.01,
@@ -488,25 +480,25 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.02,
     flexDirection: 'row',
     justifyContent: "space-between",
-    alignItems: 'center', // <-- CAMBIO
+    alignItems: 'center', 
   },
   line: {
     width: "35%",
-    backgroundColor: COLORES.textoSecundario, // <-- CAMBIO
+    backgroundColor: COLORES.textoSecundario, 
     height: 1,
   },
   TextM: { 
     fontSize: width * 0.03, 
-    color: COLORES.textoSecundario, // <-- CAMBIO
-    marginHorizontal: 8, // <-- CAMBIO
+    color: COLORES.textoSecundario, 
+    marginHorizontal: 8, 
   },
   passwordRulesBox: {
-    width: '100%', // <-- CAMBIO
-    marginTop: -15, // <-- CAMBIO
+    width: '100%', 
+    marginTop: -15, 
     marginBottom: height * 0.02,
-    paddingLeft: 10, // <-- CAMBIO
+    paddingLeft: 10, 
   },
-  rulesTitle: { // <-- NUEVO
+  rulesTitle: {
     fontSize: 13,
     fontWeight: 'bold',
     color: COLORES.textoPrincipal,
@@ -515,25 +507,25 @@ const styles = StyleSheet.create({
   ruleItem: { 
     flexDirection: 'row', 
     alignItems: 'center',
-    marginTop: 2, // <-- CAMBIO
+    marginTop: 2, 
   },
   ruleText: { 
-    fontSize: 12, // <-- CAMBIO
+    fontSize: 12, 
   },
   passwordMessage: {
     fontSize: 13,
     textAlign: "left",
-    marginTop: -15, // <-- CAMBIO
-    marginBottom: 10, // <-- CAMBIO
+    marginTop: -15, 
+    marginBottom: 10, 
     fontWeight: "bold",
   },
   match: { 
-    color: COLORES.acentoVerde // <-- CAMBIO
+    color: COLORES.acentoVerde 
   },
   noMatch: { 
-    color: COLORES.acentoPrincipal // <-- CAMBIO
+    color: COLORES.acentoPrincipal 
   },
-  passwordErrorText: { // <-- NUEVO
+  passwordErrorText: { 
     color: COLORES.acentoPrincipal,
     marginTop: -20,
     marginBottom: 20,
@@ -544,10 +536,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   errorMessage: { 
-    color: COLORES.acentoPrincipal, // <-- CAMBIO
+    color: COLORES.acentoPrincipal, 
   },
   successMessage: { 
-    color: COLORES.acentoVerde, // <-- CAMBIO
+    color: COLORES.acentoVerde,
   },
   LoginContainer: { 
     marginTop: height * 0.02, 

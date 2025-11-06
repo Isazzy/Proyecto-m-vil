@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert,
-  SafeAreaView, // --- NUEVO ---
-  StatusBar,    // --- NUEVO ---
-  ScrollView,   // --- NUEVO ---
-  ActivityIndicator, // --- NUEVO ---
+  SafeAreaView, 
+  StatusBar,    
+  ScrollView,  
+  ActivityIndicator, 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,7 +13,6 @@ import { db, storage } from '../src/config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import SelectorTipo from '../src/config/componentes/selectores/SelectorTipo';
 
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -23,13 +22,10 @@ const COLORES = {
   acentoAzul: '#5B5BFB',
 };
 
-// --- CAMBIO: 'tipos' no se usa más, se usa el Picker ---
-// const tipos = ['Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Barbería'];
 
 export default function EditarProducto({ route, navigation }) {
   const { item } = route.params;
 
-  // El estado se mantiene igual
   const [nombre, setNombre] = useState(item.nombre);
   const [precio, setPrecio] = useState(item.precio.toString());
   const [tipo, setTipo] = useState(item.tipo);
@@ -38,7 +34,6 @@ export default function EditarProducto({ route, navigation }) {
   const [nuevaImagen, setNuevaImagen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // (pickImage y subirImagen se mantienen igual)
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
@@ -60,7 +55,6 @@ export default function EditarProducto({ route, navigation }) {
     return await getDownloadURL(imageRef);
   };
 
-  // (handleGuardar se mantiene igual, solo se actualiza el alerta)
   const handleGuardar = async () => {
     if (!nombre.trim() || !precio.trim() || !tipo.trim() || !cantidad.trim()) {
       return Alert.alert('Campos Incompletos', 'Por favor completa todos los campos obligatorios (*).');
@@ -93,7 +87,6 @@ export default function EditarProducto({ route, navigation }) {
     }
   };
 
-  // --- NUEVO: Lógica para "Cancelar" (Alerta si hay cambios) ---
   const handleCancelar = () => {
     // Comprueba si el estado actual es DIFERENTE al 'item' original
     const isDirty = 
@@ -125,7 +118,7 @@ export default function EditarProducto({ route, navigation }) {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
       <ScrollView 
         style={styles.container} 
@@ -206,7 +199,7 @@ export default function EditarProducto({ route, navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

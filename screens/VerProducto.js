@@ -5,15 +5,11 @@ import {
   StyleSheet, 
   Image, 
   ScrollView, 
-  SafeAreaView, // --- NUEVO ---
-  StatusBar,    // --- NUEVO ---
-  Dimensions    // --- NUEVO ---
+  StatusBar,   
+  Dimensions    
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Para el placeholder
+import { Ionicons } from '@expo/vector-icons'; 
 
-// (Se eliminaron 'db' y 'storage' ya que no se usan en esta pantalla)
-
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101', 
@@ -23,35 +19,28 @@ const COLORES = {
   acentoAzul: '#5B5BFB',
 };
 
-const { width } = Dimensions.get('window'); // Para hacer la imagen cuadrada
+const { width } = Dimensions.get('window'); 
 
 export default function VerProducto({ route }) {
   const { item } = route.params;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
       <ScrollView style={styles.container}>
         {item.imagen ? (
           <Image source={{ uri: item.imagen }} style={styles.image} />
         ) : (
           <View style={styles.noImage}>
-            {/* --- CAMBIO: Icono en placeholder --- */}
             <Ionicons name="image-outline" size={60} color={COLORES.textoSecundario} />
             <Text style={{ color: COLORES.textoSecundario, marginTop: 8 }}>Sin imagen</Text>
           </View>
         )}
-
-        {/* --- CAMBIO: Contenedor para el padding --- */}
         <View style={styles.infoContainer}>
-          {/* --- CAMBIO: Jerarquía de texto --- */}
           <Text style={styles.tipo}>{item.tipo || 'Sin Categoría'}</Text>
           <Text style={styles.nombre}>{item.nombre}</Text>
-
-          {/* --- CAMBIO: Estilo de InfoBox --- */}
           <View style={styles.infoBox}>
             <Text style={styles.label}>Precio:</Text>
-            {/* --- CAMBIO: Estilo del precio --- */}
             <Text style={[styles.value, styles.precioValue]}>${item.precio}</Text>
           </View>
 
@@ -61,11 +50,10 @@ export default function VerProducto({ route }) {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
@@ -73,37 +61,37 @@ const styles = StyleSheet.create({
   },
   image: {
     width: width, // Ocupa todo el ancho
-    height: width, // Alto igual al ancho (cuadrado)
+    height: width, // Alto igual al ancho 
     resizeMode: 'cover',
   },
   noImage: {
     width: width,
     height: width,
-    backgroundColor: COLORES.superficie, // Color de fondo de tarjeta
+    backgroundColor: COLORES.superficie, 
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoContainer: {
-    padding: 16, // Padding para el texto
+    padding: 16, 
     marginTop: 8,
   },
   nombre: { 
     color: COLORES.textoPrincipal, 
     fontSize: 26, 
     fontWeight: 'bold', 
-    marginBottom: 20, // Más espacio después del título
+    marginBottom: 20, 
   },
   tipo: { 
-    color: COLORES.acentoAzul, // Acento de color
+    color: COLORES.acentoAzul, 
     fontSize: 16, 
     fontWeight: '600',
     marginBottom: 4,
-    textTransform: 'uppercase', // Estilo
+    textTransform: 'uppercase', 
   },
   infoBox: {
     backgroundColor: COLORES.superficie, // Color de tarjeta
     padding: 16,
-    borderRadius: 16, // Borde consistente
+    borderRadius: 16, 
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -119,7 +107,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   precioValue: {
-    color: COLORES.acentoPrincipal, // Tu color principal
+    color: COLORES.acentoPrincipal, 
     fontWeight: 'bold',
   },
 });

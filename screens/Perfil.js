@@ -10,17 +10,16 @@ import {
   TouchableWithoutFeedback,
   PanResponder,
   Animated,
-  SafeAreaView, // Añadido para consistencia
-  StatusBar,    // Añadido para consistencia
-  Pressable,    // Añadido para consistencia
-  Alert,        // Añadido para consistencia
+  StatusBar,    
+  Pressable,    
+  Alert,        
 } from 'react-native';
-// --- CAMBIO: Añadido 'useCallback' ---
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import AnimatedReanimated, { FadeInDown } from 'react-native-reanimated';
 import { auth, db } from '../src/config/firebaseConfig';
-import { signOut } from 'firebase/auth'; // <-- CAMBIO: Importado 'signOut'
+import { signOut } from 'firebase/auth'; 
 import { doc, getDoc } from 'firebase/firestore';
 import ChangePasswordForm from './ChangePasswordForm';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -32,7 +31,7 @@ export default function Profile({ navigation }) {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current; 
 
-  // --- INICIO DEL CAMBIO: Lógica de actualización automática ---
+
   const cargarUsuario = useCallback(async () => {
     if (!auth.currentUser) return;
     try { 
@@ -44,20 +43,19 @@ export default function Profile({ navigation }) {
     } catch (error) {
       console.log('Error cargando info usuario:', error);
     }
-  }, []); // Creamos una función 'cargable'
+  }, []); 
 
   useEffect(() => {
     // Se ejecuta la primera vez que entras
     cargarUsuario(); 
 
-    // Y se vuelve a ejecutar CADA VEZ que vuelves a esta pantalla ('focus')
+    // Y se vuelve a ejecutar CADA VEZ que vuelves a esta pantalla 
     const unsubscribe = navigation.addListener('focus', () => {
       cargarUsuario();
     });
 
     return unsubscribe; // Limpiamos el listener
   }, [navigation, cargarUsuario]);
-  // --- FIN DEL CAMBIO ---
 
   const panResponder = useRef(
     PanResponder.create({
@@ -111,7 +109,7 @@ export default function Profile({ navigation }) {
     { icon: 'question-circle', text: 'Ayuda', action: () => {} },
   ];
 
-  // --- CAMBIO: Función de Logout correcta ---
+
   const handleLogout = () => {
     Alert.alert('Cerrar sesión', '¿Querés cerrar sesión?', [
       { text: 'Cancelar', style: 'cancel' },
@@ -121,7 +119,7 @@ export default function Profile({ navigation }) {
         onPress: async () => {
           try {
             await signOut(auth);
-            navigation.replace('Auth'); // Vuelve al stack de Login
+            navigation.replace('Login'); 
           } catch (e) {
             Alert.alert('Error', 'No se pudo cerrar la sesión.');
           }
@@ -131,8 +129,7 @@ export default function Profile({ navigation }) {
   };
 
   return (
-    // --- CAMBIO: Añadido SafeAreaView y StatusBar ---
-    <SafeAreaView style={{flex: 1, backgroundColor: '#131111ff'}}>
+    <View style={{flex: 1, backgroundColor: '#131111ff'}}>
       <StatusBar barStyle="light-content" backgroundColor={'#131111ff'} />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
@@ -145,7 +142,7 @@ export default function Profile({ navigation }) {
           <View style={styles.topBar}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={() => navigation.goBack()} // <-- CAMBIO: 'goBack()' es más robusto
+              onPress={() => navigation.goBack()} 
               accessibilityRole="button"
               accessibilityLabel="Volver"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -170,7 +167,7 @@ export default function Profile({ navigation }) {
             <Text style={styles.email}>{auth.currentUser?.email || '-'}</Text>
           </View>
 
-          {/* --- CAMBIO: Caja de Info con campos añadidos --- */}
+          {/*  Caja de Info con campos añadidos */}
           <View style={styles.body}>
             <LinearGradient
               colors={['#f77f83ff', '#f6416c', '#43073dff']}
@@ -189,7 +186,6 @@ export default function Profile({ navigation }) {
             </Text>
           </View>
 
-          {/* --- CAMBIO: Opciones Agrupadas --- */}
           <Text style={styles.tituloSeccion}>Seguridad</Text>
           <View style={styles.optionsContainer}>
             {optionsSeguridad.map((item, index) => (
@@ -218,13 +214,13 @@ export default function Profile({ navigation }) {
 
 
           <View style={styles.containerBottom}>
-            {/* --- CAMBIO: Botón de Salir con función correcta --- */}
+
             <TouchableOpacity style={styles.button1} onPress={handleLogout}>
               <Text style={styles.buttonText}>Cerrar Sesión</Text>
             </TouchableOpacity>
           </View>
 
-          {/* === MODAL === */}
+          {/*MODAL*/}
           <Modal
             visible={showPasswordModal}
             animationType="fade"
@@ -250,11 +246,10 @@ export default function Profile({ navigation }) {
           </Modal>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-// --- TUS ESTILOS ORIGINALES (con la corrección de 'body') ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -287,12 +282,11 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     elevation: 1,
-    alignSelf: 'stretch', // <-- CORRECCIÓN: Para que ocupe el ancho
-  },
+    alignSelf: 'stretch', 
   infoText: { color: '#fff', fontSize: width * 0.045, marginBottom: 8 },
   
-  // --- TUS ESTILOS PARA OPCIONES ---
-  tituloSeccion: { // (Estilo que añadí para agrupar)
+  //  ESTILOS PARA OPCIONES
+  tituloSeccion: { 
     fontSize: 16,
     fontWeight: '600',
     color: '#aaa',
