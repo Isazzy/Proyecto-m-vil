@@ -264,7 +264,10 @@ const styles = StyleSheet.create({
     height: height * 0.3,
     opacity: 0.2,
   },
-  header: { alignItems: 'center', marginBottom: 20 },
+  header: { 
+    alignItems: 'center', 
+    marginBottom: 20 
+  },
   profileImage: {
     width: 120,
     height: 120,
@@ -273,8 +276,16 @@ const styles = StyleSheet.create({
     borderColor: '#9c6e6eff',
     marginBottom: 8,
   },
-  name: { color: '#fb5b5b', fontSize: width * 0.06, fontWeight: 'bold' },
-  email: { color: '#9c6e6eff', fontSize: width * 0.04, marginBottom: 10 },
+  name: { 
+    color: '#fb5b5b', 
+    fontSize: width * 0.06, 
+    fontWeight: 'bold' 
+  },
+  email: { 
+    color: '#9c6e6eff', 
+    fontSize: width * 0.04, 
+    marginBottom: 10 
+  },
   body: {
     backgroundColor: '#131111ff',
     opacity: 0.9,
@@ -282,8 +293,14 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     elevation: 1,
-    alignSelf: 'stretch', 
-  infoText: { color: '#fff', fontSize: width * 0.045, marginBottom: 8 },
+    alignSelf: 'stretch',
+  }, // <-- AQUÍ FALTABA LA LLAVE DE CIERRE Y LA COMA
+
+  infoText: { 
+    color: '#fff', 
+    fontSize: width * 0.045, 
+    marginBottom: 8 
+  },
   
   //  ESTILOS PARA OPCIONES
   tituloSeccion: { 
@@ -309,23 +326,38 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.3,
     borderBottomColor: '#b6cfe0ff',
   },
-  optionLeft: { flexDirection: 'row', alignItems: 'center' },
-  optionText: { color: '#fff', fontSize: width * 0.045, marginLeft: 14 },
+  optionLeft: { 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+  optionText: { 
+    color: '#fff', 
+    fontSize: width * 0.045, 
+    marginLeft: 14 
+  },
   
-  card: { padding: 1, borderRadius: 20, width: width * 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  card: { 
+    padding: 1, 
+    borderRadius: 20, 
+    width: width * 0.6 
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  },
   containerBottom: { 
     flexDirection: 'row', 
-    justifyContent: 'center', // Centrado, ya que es un solo botón
+    justifyContent: 'center', 
     width: '100%',
-    marginTop: 20, // Espacio
+    marginTop: 20,
   },
-  button1: { // Botón de Cerrar Sesión
+  button1: { 
     backgroundColor: '#413939ff',
     borderRadius: 10,
     alignItems: 'center',
-    padding: 12, // Padding
-    width: '100%', // Ancho completo
+    padding: 12, 
+    width: '100%', 
   },
   modalOverlay: {
     flex: 1,
@@ -356,6 +388,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     zIndex: 10,
-    width: '100%', // Asegura que ocupe todo el ancho
+    width: '100%',
   },
 });

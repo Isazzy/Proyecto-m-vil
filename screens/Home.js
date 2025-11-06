@@ -95,20 +95,26 @@ const RenderDashboardHeader = ({
   const ventasMes = '$ 128.500';
   const nuevosClientes = '12';
 
+  // --- INICIO DE CAMBIOS ---
+  // Config del gráfico
   // Config del gráfico
   const chartConfig = {
-    backgroundColor: 'transparent',
-    backgroundGradientFromOpacity: 0,
-    backgroundGradientToOpacity: 0,
-    color: (opacity = 1) => `rgba(251, 91, 91, ${opacity})`, 
-    labelColor: (opacity = 1) => `rgba(160, 160, 160, ${opacity})`, 
+   
+    backgroundGradientFrom: '#f6f6f6ff',
+    backgroundGradientTo: '#FFFFFF',
+    backgroundGradientFromOpacity: 1,
+    backgroundGradientToOpacity: 1,
+    color: () => `rgba(223, 8, 8, 1)`, // #FB5B5B
+    labelColor: () => `rgba(0, 0, 0, 1)`, // #000000
+
     strokeWidth: 2,
     barPercentage: 0.8,
     useShadows: false,
     propsForLabels: {
-      fontSize: 10,
+      fontSize: 11,
     },
   };
+
 
   return (
     <View style={dashboardStyles.dashboardContainer}>
@@ -135,11 +141,11 @@ const RenderDashboardHeader = ({
         />
       </View>
 
-      {/*  SECCIÓN GRÁFICO DE BARRAS */}
+      {/* SECCIÓN GRÁFICO DE BARRAS */}
       <Text style={dashboardStyles.tituloSeccion}>Inventario por Categoría</Text>
       <View style={dashboardStyles.graficoContainer}>
         {loadingGraficoBarras ? (
-          <ActivityIndicator color={COLORES.textoPrincipal} style={{ height: 220 }} />
+          <ActivityIndicator color={COLORES.acentoAzul} style={{ height: 220 }} />
         ) : (
           <BarChart
             data={{
@@ -148,7 +154,7 @@ const RenderDashboardHeader = ({
             }}
             width={screenWidth - 64} 
             height={220}
-            chartConfig={chartConfig}
+            chartConfig={chartConfig} 
             withVerticalLabels={true}
             withHorizontalLabels={false}
             fromZero={true}
@@ -159,7 +165,6 @@ const RenderDashboardHeader = ({
         )}
       </View>
 
-      {/*  TOP PRODUCTOS */}
       <Text style={dashboardStyles.tituloSeccion}>Top Productos</Text>
       <View style={dashboardStyles.topProductoList}>
         {loadingTopProductos ? (
@@ -250,7 +255,7 @@ export default function Home({ navigation }) {
     { id: '4D', icon: 'calculator-sharp', titulo: 'Servicios', screen: 'Servicios' },
     { id: '5', icon: 'person-add-sharp', titulo: 'Proveedores', screen: 'Proveedores' },
     { id: '6', icon: 'cart-sharp', titulo: 'Compras', screen: 'Compras' },
-  ], []); // Reducido a 6 para un grid perfecto de 3x2
+  ], []); 
   
   const handleLogout = useCallback(() => { 
     Alert.alert('Cerrar sesión', '¿Querés cerrar sesión?', [
@@ -261,15 +266,14 @@ export default function Home({ navigation }) {
         onPress: async () => {
           try {
             await signOut(auth);
-            // Vuelve al stack de autenticación
-            navigation.replace('Auth'); 
+            navigation.replace('Login'); 
           } catch (e) {
             Alert.alert('Error al cerrar sesión', e?.message ?? 'Intenta nuevamente.');
           }
         },
       },
     ]);
-  }, [navigation]); // Añadido navigation
+  }, [navigation]); 
   
   const handleOpenScreen = useCallback((screenName) => { 
     if (!screenName) {
@@ -277,24 +281,23 @@ export default function Home({ navigation }) {
       return;
     }
     navigation.navigate(screenName);
-  }, [navigation]); // Añadido navigation
+  }, [navigation]); 
   
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => { 
     setRefreshing(true);
-    // (Podrías re-llamar tus funciones de fetch aquí si no usaras onSnapshot)
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
       
       {/* HEADER (con botón de menú) */}
       <View style={styles.header}>
         <Pressable
           style={styles.iconBtn}
-          onPress={() => navigation.openDrawer()} // <-- ABRE EL MENÚ
+          onPress={() => navigation.openDrawer()} 
         >
           <Ionicons name="menu-sharp" size={26} color={COLORES.textoSecundario} />
         </Pressable>
@@ -360,11 +363,11 @@ export default function Home({ navigation }) {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-// --- ESTILOS PRINCIPALES (con botón de menú) ---
+// ESTILOS PRINCIPALES 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -375,12 +378,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORES.fondo, // Integrado al fondo
-    borderBottomWidth: 1, // Borde sutil
+    backgroundColor: COLORES.fondo, 
+    borderBottomWidth: 1, 
     borderBottomColor: COLORES.superficie,
   },
   iconBtn: {
-    marginRight: 10, // Ajuste de margen
+    marginRight: 10, 
     padding: 4,
   },
   avatarWrap: {
@@ -393,7 +396,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORES.superficie,
-    marginLeft: 10, // Margen añadido
+    marginLeft: 10, 
   },
   avatarImage: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -412,7 +415,7 @@ const styles = StyleSheet.create({
   errorText: { color: COLORES.acentoPrincipal, fontWeight: '600' },
 });
 
-// --- ESTILOS DEL DASHBOARD (Rediseñados) ---
+// ESTILOS DEL DASHBOARD 
 const dashboardStyles = StyleSheet.create({
   dashboardContainer: {
     width: '100%',
@@ -427,7 +430,7 @@ const dashboardStyles = StyleSheet.create({
     marginBottom: 16,
   },
   
-  // 1. Estilos de Estadísticas (NUEVO DISEÑO)
+  // 1. Estilos de Estadísticas 
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -503,7 +506,7 @@ const dashboardStyles = StyleSheet.create({
     marginLeft: 10,
   },
 
-  // 4. Estilos de Accesos Rápidos (NUEVO GRID)
+  // 4. Estilos de Accesos Rápidos
   accesosGridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

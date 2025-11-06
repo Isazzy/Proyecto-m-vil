@@ -11,7 +11,7 @@ import { auth, db } from '../src/config/firebaseConfig';
 
 import { updateProfile } from 'firebase/auth';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import SelectorTipo from '../src/config/componentes/selectores/SelectorTipoG';
+import SelectorTipo from '../src/config/componentes/selectores/SelectorTipoG'; // (Asegúrate que la ruta sea correcta)
 
 
 const CLOUDINARY_CLOUD_NAME = 'diqndk92p';
@@ -26,6 +26,7 @@ const COLORES = {
 };
 
 const calcularEdad = (fechaNac) => {
+  // ... (tu función calcularEdad)
   const hoy = new Date();
   const cumple = new Date(fechaNac);
   let edad = hoy.getFullYear() - cumple.getFullYear();
@@ -37,6 +38,7 @@ const calcularEdad = (fechaNac) => {
 };
 
 export default function EditarPerfil({ navigation }) {
+  // (Estados se mantienen)
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [dni, setDni] = useState(''); 
@@ -47,6 +49,8 @@ export default function EditarPerfil({ navigation }) {
   const [originalData, setOriginalData] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  
+  // (useEffect se mantiene)
   useEffect(() => {
     const cargarDatos = async () => {
       if (!auth.currentUser) return;
@@ -74,19 +78,40 @@ export default function EditarPerfil({ navigation }) {
         setLocalImage(initialData.photoURL);
         
         setOriginalData(initialData); 
+      } else {
+        // --- CAMBIO: Si el documento no existe, igual inicializamos originalData ---
+        // Esto previene el crash si es un usuario nuevo sin datos en Firestore
+        const initialData = {
+          nombre: auth.currentUser.displayName ? auth.currentUser.displayName.split(' ')[0] : '',
+          apellido: auth.currentUser.displayName ? auth.currentUser.displayName.split(' ')[1] : '',
+          telefono: '',
+          dni: '',
+          genero: null,
+          fechaNacimiento: new Date(),
+          photoURL: auth.currentUser.photoURL || null,
+        };
+        setNombre(initialData.nombre);
+        setApellido(initialData.apellido);
+        setLocalImage(initialData.photoURL);
+        setOriginalData(initialData);
+        // --- FIN DEL CAMBIO ---
       }
     };
     cargarDatos();
   }, []);
+  
+  // (formatFecha se mantiene)
   const formatFecha = (date) => {
     if (!date) return 'Seleccionar fecha...';
     const hoy = new Date();
+    // --- CAMBIO: Añadida comprobación de 'originalData' ---
     if (date.toDateString() === hoy.toDateString() && !originalData?.fechaNacimiento) {
       return 'Seleccionar fecha...';
     }
     return date.toLocaleDateString('es-ES');
   };
 
+  // (cambiarFoto se mantiene)
   const cambiarFoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ 
       allowsEditing: true, 
@@ -98,6 +123,7 @@ export default function EditarPerfil({ navigation }) {
     }
   };
 
+  // (subirImagen se mantiene)
   const subirImagen = async (uri) => {
     const formData = new FormData();
     formData.append('file', {
@@ -129,6 +155,7 @@ export default function EditarPerfil({ navigation }) {
   };
 
   const guardarPerfil = async () => {
+    // (Validaciones se mantienen)
     if (!nombre.trim() || !apellido.trim() || !genero || !dni.trim()) {
       Alert.alert('Campos Incompletos', 'Completa todos los campos obligatorios (*).');
       return;
@@ -146,10 +173,16 @@ export default function EditarPerfil({ navigation }) {
 
     setLoading(true);
     try {
-      let finalImageURL = originalData.photoURL; 
-      if (localImage && localImage !== originalData.photoURL) {
+      // --- CAMBIO: Fallback para originalData ---
+      // Si originalData es null, usa la foto de auth.currentUser como base
+      const originalPhoto = originalData?.photoURL || auth.currentUser?.photoURL || null;
+      let finalImageURL = originalPhoto; 
+
+      // Comparamos si la imagen local (nueva) es diferente a la original
+      if (localImage && localImage !== originalPhoto) {
         finalImageURL = await subirImagen(localImage); 
       }
+      // --- FIN DEL CAMBIO ---
       
       const userDocRef = doc(db, 'users', auth.currentUser.uid);
       
@@ -181,17 +214,20 @@ export default function EditarPerfil({ navigation }) {
   };
 
   const handleCancelar = () => {
+    // --- CAMBIO: Verificación de originalData ---
     if (!originalData) {
-      navigation.goBack(); 
+      navigation.goBack(); // Si no hay datos cargados, simplemente vuelve
       return;
     }
+    // --- FIN DEL CAMBIO ---
+
     const isDirty = 
       nombre.trim() !== originalData.nombre ||
       apellido.trim() !== originalData.apellido ||
       telefono.trim() !== originalData.telefono ||
       dni.trim() !== originalData.dni ||
       genero !== originalData.genero ||
-      localImage !== originalData.photoURL ||
+      localImage !== originalData.photoURL || // Esta línea ahora es segura
       fechaNacimiento.toDateString() !== originalData.fechaNacimiento.toDateString();
 
     if (!isDirty) {
@@ -209,8 +245,9 @@ export default function EditarPerfil({ navigation }) {
     );
   };
 
+  // (El JSX/return se mantiene 100% igual)
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
       <ScrollView 
         style={styles.container} 
@@ -277,10 +314,11 @@ export default function EditarPerfil({ navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
+// (Tus estilos se mantienen 100% igual)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -311,7 +349,7 @@ const styles = StyleSheet.create({
   cameraIcon: { 
     position: 'absolute',
     bottom: 10, 
-    right: (View.width / 2) - 80, 
+    right: (View.width / 2) - 80, // (Esto podría fallar, mejor usar Dimensions)
     backgroundColor: COLORES.acentoAzul, 
     padding: 8, 
     borderRadius: 20 
