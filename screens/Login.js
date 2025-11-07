@@ -1,27 +1,98 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, Dimensions,ScrollView } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Dimensions, 
+  ScrollView, 
+  StatusBar,   
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get("window");
-
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', //190101
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
+  acentoPrincipal: '#FB5B5B', //FB5B5B
+  acentoAzul: '#6ba1c1ff',     //6ba1c1ff
+};
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const [message, setMessage]=useState(null);
-  const [typeMessage, setTypeMessage]=useState(null);
+  const [message, setMessage] = useState(null);
+  const [typeMessage, setTypeMessage] = useState(null);
+  const [emailError, setEmailError] = useState(null);
 
-  useEffect(() => {
-    if (typeMessage==="error" && email && password){
+  // Animaciones de labels
+  const emailAnim = useSharedValue(0);
+  const passAnim = useSharedValue(0);
+
+  const emailLabelStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: 45, 
+    top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),
+    fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
+    color: emailAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario, 
+    paddingHorizontal: 4,
+  }));
+
+  const passLabelStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: 45, 
+    top: withTiming(passAnim.value ? -10 : 15, { duration: 200 }),
+    fontSize: withTiming(passAnim.value ? 13 : 16, { duration: 200 }),
+    color: passAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario, 
+    paddingHorizontal: 4,
+  }));
+
+  const validateEmailFormat = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      setEmailError("Formato de correo electrónico inválido");
+      setTypeMessage("error");
+      setMessage("Formato de correo electrónico inválido");
+    } else {
+      setEmailError(null);
       setMessage(null);
     }
-  }, [email,password]);
+  };
 
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem("email");
+        const savedPassword = await AsyncStorage.getItem("password");
+        if (savedEmail && savedPassword) {
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRemember(true);
+          emailAnim.value = 1;
+          passAnim.value = 1;
+        }
+      } catch (error) {
+        setTypeMessage("error");
+        setMessage("Error al cargar credenciales");
+      }
+    };
+    loadCredentials();
+  }, []);
+
+  useEffect(() => {
+    if (typeMessage === "error" && email && password) setMessage(null);
+  }, [email, password]);
+
+  
   const handleLogin = async () => {
     if (!email || !password) {
       setTypeMessage("error");
@@ -29,17 +100,26 @@ export default function Login({ navigation }) {
       return;
     }
 
+    if (emailError) {
+      setTypeMessage("error");
+      setMessage(emailError);
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log("Usuario logueado:", user);
-      setMessage( "Has iniciado sesión correctamente."); 
-         navigation.reset({ index: 0, routes: [{ name: 'Home' }] 
-        });
-     
+      // const user = userCredential.user;
 
+      if (remember) {
+        await AsyncStorage.setItem("email", email);
+        await AsyncStorage.setItem("password", password);
+      } else {
+        await AsyncStorage.removeItem("email");
+        await AsyncStorage.removeItem("password");
+      }
+      navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] });
     } catch (error) {
-      let errorMessage = "Hubo un problema al iniciar sesión.";
+      let errorMessage = "Correo y/o contraseña incorrectas.";
       switch (error.code) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido.";
@@ -55,235 +135,224 @@ export default function Login({ navigation }) {
           break;
       }
       setMessage(errorMessage);
-      setTypeMessage("error")
+      setTypeMessage("error");
     }
   };
 
-
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+          
+          
+          <Animated.Text entering={FadeInDown.duration(1600)} style={styles.title}>
+            ¡Bienvenido de nuevo!
+          </Animated.Text>
+          
+          <View style={styles.messageContainer}>
+            {message && <Text style={[styles.message, typeMessage === "error" && styles.errorMessage]}>{message}</Text>}
+          </View>
 
-        <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
+          <View style={styles.formBox}>
+            {/* Email */}
+            <View style={[styles.inputContainer, emailError && { borderColor: COLORES.acentoAzul }]}>
+              <FontAwesome name="envelope" size={20} color={COLORES.textoSecundario} style={styles.icon} />
+              <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
+              <TextInput
+                style={styles.input}
+                placeholder=""
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (emailError) {
+                    setEmailError(null);
+                    setMessage(null);
+                  }
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor={COLORES.textoSecundario}
+                onFocus={() => emailAnim.value = 1}
+                onBlur={() => {
+                  emailAnim.value = email ? 1 : 0;
+                  if (email) validateEmailFormat(email);
+                }}
+              />
+            </View>
 
-      </View>
-      
-  
-      
-      <Text style={styles.title}>¡Bienvenido de nuevo!</Text>
+            {/* Password */}
+            <View style={[styles.inputContainer,{  borderBottomWidth: 2 }]}>
+              <FontAwesome name="lock" size={20} color={COLORES.textoSecundario} style={styles.icon} />
+              <Animated.Text style={passLabelStyle}>Contraseña</Animated.Text>
+              <TextInput
+                style={styles.input}
+                placeholder=""
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                onFocus={() => passAnim.value = 1}
+                onBlur={() => passAnim.value = password ? 1 : 0}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color={COLORES.textoSecundario} />
+              </TouchableOpacity>
+            </View>
 
-      <View style={{ height: height * 0.01, justifyContent: "center", textAlign: "center", flexDirection: 'row',}}>
-        {message && (
-          <Text style={[styles.message, styles.errorMessage]}>
-            {message}
-          </Text>
-        )}
-      </View>
+            <View style={styles.optionsRow}>
+              <TouchableOpacity 
+                style={styles.remember} 
+                onPress={async () => {
+                  setRemember(!remember);
+                  if (remember) {
+                  }
+                }}
+              >
+                <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color={COLORES.textoPrincipal} />
+                <Text style={styles.rememberText}>Recordar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+                <Text style={styles.forgot}>¿Olvidaste tu contraseña?</Text>
+              </TouchableOpacity>
+            </View>
 
-      <View style={styles.formBox}>
-      <Text style={styles.label}></Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="envelope" size={20} color="#fff" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su correo"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholderTextColor="#f0f0f0ff"
-        />
-      </View>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Ingresar</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.logo}>Romina Magallanez</Text>
+          <View style={styles.logoText}>
+            <View style={styles.line} />
+            <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
+            <View style={styles.line} />
+          </View>
 
-      <Text style={styles.label}></Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#fff" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su contraseña"
-          placeholderTextColor="#f0f0f0ff"
-          value={password}
-          onChangeText={(text) => setPassword (text)}
-          secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <FontAwesome name={showPassword ? "eye-slash" : "eye"} marginRight={10} size={18} color="#e6e9dbff" />
-        </TouchableOpacity>
+          <View style={styles.signUpContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <Text style={styles.signUpText}>¿No tenés cuenta aún?
+                <Text style={{ color: COLORES.acentoPrincipal }}>  Regístrate</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
-
-      <View style={styles.optionsRow}>
-        <TouchableOpacity style={styles.remember} onPress={() => setRemember(!remember)}>
-          <FontAwesome name={remember ? "check-square" : "square-o"} size={18} color="#fff" />
-          <Text style = {styles.rememberText}>Recordar Usuario</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.forgot}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Ingresar</Text>
-      </TouchableOpacity>
-      </View>
-      {/* logo*/}
-      <Text style={styles.logo}>Romina Magallanez</Text>
-      <View style={styles.logoText}>
-        <View style={styles.line}/>
-        <View >
-          <Text style={styles.TextM}> M  I    T  I  E  M  P  O </Text>
-        </View> 
-        <View style={styles.line}  />
-        
-      </View>
-      
-      <View style={styles.signUpContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.signUpText}>¿No tienes cuenta aún?   
-            <Text style={{color: "#ff5b5b"}}>  Regístrate</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-    </ScrollView>
+   
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORES.fondo,
+  },
+  scrollContainer: {
+    flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: width * 0.08,
-    paddingVertical: height*0.04,
-    backgroundColor: '#181515ff',
+    paddingVertical: height * 0.04,
   },
-
-  imageContainer: {
-    position: "absolute",
-    top:0,
-    borderBottomRightRadius: 100,
-    overflow: "hidden",
-    opacity: 0.4,
-  },
-  fondo:{
-
-    width: width *1.1 ,
-    height:height*0.3,//esta es la imagen
-  },
+ 
   title: {
-    fontFamily: 'GreatVibes',
-    color: "#fff",
+    fontFamily: 'GreatVibes', 
+    color: COLORES.textoPrincipal,
     fontSize: width * 0.1,
     fontWeight: 'bold',
-    marginTop: height* 0.06,
-    marginBottom: height *0.02,
-  
+    marginTop: height * 0.06,
+    marginBottom: height * 0.02,
   },
-  label: {
-    color: "#a3b941ff",
-    fontSize: width * 0.04,
-    fontWeight: 'bold',
+  messageContainer: {
+    height: height * 0.03, 
+    justifyContent: "center", 
+    alignItems: 'center',
   },
-  formBox:{
-    
-    borderRadius: 20,
-    padding: width * 0.05,
+  formBox: {
     width: "100%",
     marginTop: height * 0.05,
   },
+  //  Inputs
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#ff5b5b',
+    borderColor: COLORES.acentoPrincipal, // Tu color original
     marginBottom: height * 0.04,
-   
   },
   icon: {
-    marginRight: 5,
-    marginTop: height * -0.006,
+    marginRight: 10,
+    marginLeft: 5,
   },
   input: {
     flex: 1,
-    height: height * 0.05,
-    color:"#fff",
-    
+    height: '100%',
+    color: COLORES.textoPrincipal,
+    fontSize: 16,
   },
-  optionsRow:{
-    flexDirection:"row",
-    justifyContent:'space-between',
+  optionsRow: {
+    flexDirection: "row",
+    justifyContent: 'space-between',
     marginVertical: height * 0.015,
+    marginTop: -10, // Sube las opciones
   },
-  remember:{
+  remember: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  rememberText:{
-    color: "#fdfdfdff",
+  rememberText: {
+    color: COLORES.textoPrincipal,
     marginLeft: 5,
-    fontSize: width * 0.035,
+    fontSize: width * 0.032,
   },
-  forgot:{
-    color: '#c7d9e4ff',
+  forgot: {
+    color: COLORES.acentoPrincipal,
     fontSize: width * 0.030,
   },
+  // --- CAMBIO: Estilo de Botón ---
   button: {
-    backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.010,
-    borderRadius: 50,
+    backgroundColor: COLORES.superficie, // Azul para acción principal
+    paddingVertical: 14,
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: height * 0.03,
-
   },
   buttonText: {
-    color: '#fff',
-    fontSize: width * 0.06,
+    color: COLORES.textoPrincipal,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  logo:{
-    color: "#fff",
+  logo: {
+    color: COLORES.textoPrincipal,
     fontSize: width * 0.10,
     fontFamily: 'GreatVibes',
-    marginTop:height * 0.03,
+    marginTop: height * 0.03,
   },
-  logoText:{
+  logoText: {
     marginBottom: height * 0.04,
-    flexDirection:'row',
-    justifyContent:"space-between",
-   
-
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    alignItems: 'center',
   },
-  line:{
-   
-    width:"35%",
-    backgroundColor: "#a5a3a3ff",
-    marginHorizontal: 8,
+  line: {
+    width: "35%",
+    backgroundColor: COLORES.textoSecundario,
     height: 1,
-    marginTop: height * 0.010, 
-    
   },
-  
-  TextM:{
+  TextM: {
     fontSize: width * 0.03,
-    color: "#b1a8a8ff"
-    
+    color: COLORES.textoSecundario,
+    marginHorizontal: 8,
   },
   signUpContainer: {
-    marginBottom: height * 0.04, 
+    marginBottom: height * 0.04,
   },
   signUpText: {
     fontSize: width * 0.04,
-    color: '#ffffffff',
-
+    color: COLORES.textoPrincipal,
   },
-  message:{
-    marginTop: height * 0.01,
+  message: {
     fontSize: width * 0.04,
     textAlign: "center",
     position: "absolute",
   },
-  errorMessage:{
-    color:"#ff5b5b",
+  errorMessage: {
+    color: COLORES.acentoPrincipal,
   },
-
- 
 });
-

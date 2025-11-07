@@ -1,114 +1,119 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity,Dimensions } from "react-native";
+import React, { useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Dimensions, 
+  StatusBar,
+  ImageBackground
+} from 'react-native';
+// --- CAMBIO: Importamos 'FadeIn' para el texto 'MI TIEMPO' ---
+import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 
-  const {width, height}= Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
+const COLORES = {
+  fondo: '#000000',
+  superficie: '#190101', 
+  textoPrincipal: '#FEE6E6', 
+  textoSecundario: '#A0A0A0', 
+};
 
 export default function SplashScreen({ navigation }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigation.replace("Login"); 
+    }, 4000); 
+    return () => clearTimeout(timer); 
+  }, [navigation]);
   
   return (
-    <View style={styles.container}>
-            <View style={styles.imageContainer}>
-      
-              <ImageBackground source={require('../assets/fondo.png')} style={styles.fondo} />
-      
-            </View>  
-            
-           <View>
-              <Text style={styles.logo}>Romina Magallanez</Text>
-                <View style={styles.logoText}>
-                  <View style={styles.line}/>
-                    <View >
-                      <Text style={styles.TextM}> E  S  T  I  L  I  S  T  A </Text>
-                    </View> 
-                  <View style={styles.line}  />
-                   
-                </View>
-                <Text style={styles.Text1}>Cuidamos tu imagen, {"\n"}realzamos tu belleza. </Text>
-               
-            </View>
-        {/* Botón para saltar */}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.replace("Login")}
-        >
-          <Text style={styles.buttonText}> Comenzar </Text>
-        </TouchableOpacity>
-      
-    </View>
+    <ImageBackground
+      source={require('../assets/Splash.png')} 
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.contentOverlay}> 
+        <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
+        <View style={styles.contentContainer}>
+          <View style={styles.contentContainer1}>
+            <Animated.Text
+              entering={FadeInUp.delay(500).duration(1200)}
+              style={styles.logo}
+            >
+              Romina
+            </Animated.Text>
+            <Animated.Text
+              entering={FadeInUp.delay(700).duration(1200)}
+              style={styles.logo1}
+            >
+              Magallanez
+            </Animated.Text>
+          </View >
+          <Animated.View 
+            entering={FadeIn.delay(1300).duration(1500)} 
+            style={styles.logoText}
+          >
+            <View style={styles.line} />
+            <Text style={styles.TextM}> M  I    T  I  E  M  P  O  </Text>
+            <View style={styles.line} />
+          </Animated.View>
+        </View>
+      </View>
+    </ImageBackground>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    paddingHorizontal: width * 0.08,
-    paddingVertical: height * 0.04,
-    backgroundColor: "#d6cbcbff",
-  },
-  imageContainer: {
-    position: "absolute",
-    top: 0,
-    borderBottomLeftRadius: 44,
-    borderBottomRightRadius: 44,
-    overflow: "hidden",
-  
-  },
-  fondo: {
-    width: width * 1.0,
-    height: height * 0.4, // altura de la imagen
- 
-  },
 
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  contentOverlay: { 
+    flex: 1,
+    backgroundColor: 'transparent', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingHorizontal: width * 0.08,
+    paddingVertical: height * 0.06,
+  },
+  contentContainer: {
+    alignItems: 'center',
+  },
+  contentContainer1:{
+    alignItems: "center",
+    alignSelf: "center",
+    flexDirection: "row", 
+    justifyContent: "center", 
+  },
   logo:{
-    color: "#fff",
-    fontSize: width * 0.11, 
-    fontFamily: 'GreatVibes',
-    marginTop:height * 0.12,
+    color: COLORES.textoPrincipal, 
+    marginRight: 12,
+    fontSize: width * 0.12, 
+    fontFamily: 'GreatVibes', 
     textAlign:"center",
   },
+  logo1:{
+    color: COLORES.textoPrincipal, 
+    fontSize: width * 0.12, 
+    fontFamily: 'GreatVibes', 
+  },
   logoText:{
-    
-    marginBottom: height * 0.10,
+    marginBottom: height * 0.09,
     flexDirection:"row",
     justifyContent:"center", 
+    alignItems: 'center',
+    marginTop: height * -0.01,
   },
   line:{
     width:"35%",
-    backgroundColor: "#a5a3a3ff",
-    marginHorizontal: 8,
+    backgroundColor: COLORES.textoSecundario, 
     height: 1,
-    marginTop: height * 0.010, 
-    
   },
-  
   TextM:{
     fontSize: width * 0.03,
-    color: "#b1a8a8ff"
-    
-  },
-  Text1:{
-    fontSize: width * 0.12, 
-     lineHeight: width * 0.16,  // mejor interlineado
-    color: "#2c3e50",          
-    textAlign: "auto",      
-    alignSelf: "flex-start",
-    marginTop: height * 0.07,  // separación desde arriba
-    marginHorizontal: width * 0.06, // padding lateral
-    fontWeight: "bold",
-  },
-    button: {
-    backgroundColor: '#fa4c4cff',
-    paddingVertical: height * 0.012,
-    paddingHorizontal: width * 0.1, 
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: height * 0.06,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: width * 0.06,
-  },
+    color: COLORES.textoSecundario, 
+    marginHorizontal: 8,
+  },  
 });
-
-

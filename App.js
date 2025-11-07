@@ -1,73 +1,74 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './src/config/firebaseConfig';
-import * as Font from "expo-font";
-import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Screens
 import Login from './screens/Login';
 import SignUp from './screens/SignUp';
+import SplashScreen from "./screens/SplashScreen"
+import Perfil from './screens/EditarPerfil'; 
+import AppDrawer from './screens/AppDrawer';
+import EditarPerfil from './screens/EditarPerfil';
+import ForgotPassword from './screens/ForgotPassword';
+import AgregarProducto from './screens/AgregarProducto'
+import EditarProducto from './screens/EditarProducto'
+import VerProducto from './screens/VerProducto'
 
-import Home from './screens/Home';
-import SplashScreen from './screens/SplashScreen';
+import { useFonts } from 'expo-font';
 
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const loadFonts = async () => {
-      await Font.loadAsync({
-        GreatVibes: require("./assets/Fonts/Great_Vibes/GreatVibes-Regular.ttf"),
-        SansationRegular: require("./assets/Fonts/Sansation/Sansation-Light.ttf"),
-        SansationBold: require("./assets/Fonts/Sansation/Sansation-Bold.ttf"),
-      });
-      setFontsLoaded(true);
-    };
-    loadFonts();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setIsAuthenticated(!!user);
-    });
-    return unsubscribe;
-  }, []);
+  const [fontsLoaded] = useFonts({
+    'GreatVibes': require('./assets/Fonts/Great_Vibes/GreatVibes-Regular.ttf'), 
+  });
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen">
-        <Stack.Screen
-          name="SplashScreen"
-          component={SplashScreen}
-          options={{ headerShown: false }}
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false, 
+        }}
+      >
+        <Stack.Screen 
+          name="Splash" 
+          component={SplashScreen} 
         />
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false }}
+        <Stack.Screen 
+          name="Login" 
+          component={Login} 
         />
         <Stack.Screen 
           name="SignUp" 
-          component={SignUp}
-          options={{
-            headerTransparent: true,       
-            headerTitle: "",                
-            headerTintColor: "#fff",      
-          }} 
-/>
-
-        <Stack.Screen name="Home" component={Home} />
+          component={SignUp} 
+        />
+        <Stack.Screen 
+          name="EditarPerfil"
+          component={EditarPerfil} 
+        />
+        <Stack.Screen 
+          name="ForgotPassword"
+          component={ForgotPassword} 
+        />
+        <Stack.Screen 
+          name="AgregarProducto"
+          component={AgregarProducto} 
+        />
+        <Stack.Screen 
+          name="VerProducto"
+          component={VerProducto} 
+        />
+        <Stack.Screen 
+          name="EditarProducto"
+          component={EditarProducto} 
+        />
+        <Stack.Screen 
+          name="MainApp" 
+          component={AppDrawer} 
+        />
+        
       </Stack.Navigator>
-
     </NavigationContainer>
   );
 }
-
 
