@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   // --- CAMBIO: Estilo de Botón ---
   button: {
-    backgroundColor: COLORES.superficie, // Azul para acción principal
+    backgroundColor: COLORES.acentoAzul, // Azul para acción principal
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',

@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -264,7 +263,7 @@ export default function Home({ navigation }) {
   const onRefresh = useCallback(() => { setRefreshing(true); setTimeout(() => setRefreshing(false), 800); }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
 
       {/* HEADER */}
@@ -327,7 +326,7 @@ export default function Home({ navigation }) {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
