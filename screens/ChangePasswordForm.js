@@ -7,7 +7,7 @@ import {
   StyleSheet, 
   Dimensions, 
   Alert,
-  ActivityIndicator // --- NUEVO ---
+  ActivityIndicator 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 // import { LinearGradient } from 'expo-linear-gradient'; // --- Ya no se usa ---
@@ -85,7 +85,7 @@ export default function ChangePasswordForm({ setShowModal }) {
         <TextInput
           style={styles.input}
           placeholder="Contraseña actual"
-          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
+          placeholderTextColor={COLORES.textoSecundario}
           secureTextEntry={!showCurrent}
           value={currentPassword}
           onChangeText={setCurrentPassword}
@@ -101,7 +101,7 @@ export default function ChangePasswordForm({ setShowModal }) {
         <TextInput
           style={styles.input}
           placeholder="Nueva contraseña"
-          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
+          placeholderTextColor={COLORES.textoSecundario} 
           secureTextEntry={!showNew}
           value={newPassword}
           onChangeText={setNewPassword}
@@ -117,7 +117,7 @@ export default function ChangePasswordForm({ setShowModal }) {
         <TextInput
           style={styles.input}
           placeholder="Confirmar nueva contraseña"
-          placeholderTextColor={COLORES.textoSecundario} // <-- CAMBIO
+          placeholderTextColor={COLORES.textoSecundario}
           secureTextEntry={!showConfirm}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -127,7 +127,7 @@ export default function ChangePasswordForm({ setShowModal }) {
         </TouchableOpacity>
       </View>
 
-      {/* --- CAMBIO: Botón rediseñado --- */}
+      {/* --- Botón rediseñado --- */}
       <TouchableOpacity style={styles.button} onPress={handleChangePassword} disabled={loading}>
         {loading ? (
           <ActivityIndicator color={COLORES.textoPrincipal} />
@@ -144,15 +144,12 @@ export default function ChangePasswordForm({ setShowModal }) {
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   container: {
-    // El fondo es heredado del modal ('superficie')
-    // Dejamos el padding que tenías
     padding: 20,
   },
   title: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
+    color: COLORES.textoPrincipal,
     fontSize: width * 0.06,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -162,41 +159,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: COLORES.acentoPrincipal, // <-- CAMBIO (Mismo color)
+    borderColor: COLORES.acentoPrincipal,
     marginBottom: 15,
   },
   icon: { 
     marginRight: 10,
-    color: COLORES.acentoPrincipal, // <-- CAMBIO (Mismo color)
+    color: COLORES.acentoPrincipal,
   },
   input: {
     flex: 1,
-    color: COLORES.textoPrincipal, // <-- CAMBIO
+    color: COLORES.textoPrincipal,
     paddingVertical: 8,
     fontSize: 16,
   },
-  // --- CAMBIO: Estilo de botón ---
+  // --- Estilo de botón ---
   button: { 
-    marginTop: 20, // Más espacio
-    backgroundColor: COLORES.acentoAzul, // Color de acción
-    borderRadius: 16, // Consistente
-    paddingVertical: 14, // Consistente
+    marginTop: 20, 
+    backgroundColor: COLORES.acentoAzul, 
+    borderRadius: 16, 
+    paddingVertical: 14, 
     alignItems: 'center',
-    height: 48, // Altura fija para el ActivityIndicator
+    height: 48, 
     justifyContent: 'center',
   },
-  // (gradient style eliminado)
   buttonText: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
+    color: COLORES.textoPrincipal, 
     fontSize: 16,
     fontWeight: 'bold',
   },
   cancelButton: {
-    marginTop: 15, // Más espacio
+    marginTop: 15,
     alignItems: 'center',
   },
   cancelText: {
-    color: COLORES.textoSecundario, // <-- CAMBIO
+    color: COLORES.textoSecundario,
     fontSize: 14,
   },
 });

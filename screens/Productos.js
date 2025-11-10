@@ -11,19 +11,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../src/config/firebaseConfig'; 
 
-// --- NUEVA PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101', 
   textoPrincipal: '#FEE6E6', 
   textoSecundario: '#A0A0A0', 
   
-  acentoPrincipal: '#FB5B5B', // Tu color
-  acentoAzul: '#6ba1c1ff',     // Triádica
-  acentoVerde: '#5BFB5B',   // Triádica
+  acentoPrincipal: '#FB5B5B', 
+  acentoAzul: '#6ba1c1ff',     
+  acentoVerde: '#5BFB5B',   
 };
 
-const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros']; // Añadido 'Otros'
+const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros'];
 
 const ProductoCard = ({ item, navigation, onEliminar }) => {
   const handleVer = () => navigation.navigate('VerProducto', { item });
@@ -203,31 +202,28 @@ export default function Productos({ navigation }) {
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: COLORES.fondo, // Negro sólido
+    backgroundColor: COLORES.fondo,
   },
-  // --- NUEVO HEADER ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16, // Espacio superior
-    paddingBottom: 0, // El título ya tiene padding
+    paddingTop: 16,
+    paddingBottom: 0,
   },
   iconBtn: {
     padding: 4,
-    marginRight: 15, // Espacio entre el icono y el título
+    marginRight: 15,
   },
   titulo: { 
     fontSize: 22, 
     fontWeight: 'bold', 
     color: COLORES.textoPrincipal, 
-    paddingVertical: 16, // Padding vertical
+    paddingVertical: 16, 
   },
-  // --- Estilos de Filtros (Rediseñados) ---
   filtrosContainer: {
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -242,7 +238,7 @@ const styles = StyleSheet.create({
     borderColor: COLORES.superficie,
   },
   filtroActivo: { 
-    backgroundColor: COLORES.acentoPrincipal, // Tu color
+    backgroundColor: COLORES.acentoPrincipal,
     borderColor: COLORES.acentoPrincipal,
   },
   filtroText: { 
@@ -253,13 +249,13 @@ const styles = StyleSheet.create({
     color: COLORES.textoPrincipal, 
     fontWeight: '700',
   },
-  // --- Estilo Botón Agregar (Rediseñado) ---
+  // --- Estilo Botón Agregar ---
   addButton: {
     flexDirection: 'row',
-    backgroundColor: COLORES.acentoAzul, // Acento Azul para CTA
+    backgroundColor: COLORES.acentoAzul, 
     padding: 12,
     marginHorizontal: 16,
-    borderRadius: 16, // Coherente
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -281,25 +277,25 @@ const styles = StyleSheet.create({
     marginTop: 40 
   },
 
-  // --- Estilos de Card (Rediseñados) ---
+  // --- Estilos de Card ---
   listContainer: {
     paddingHorizontal: 8,
     paddingBottom: 16,
   },
   card: {
-    backgroundColor: COLORES.superficie, // Fondo de tarjeta
-    borderRadius: 16, // Coherente
+    backgroundColor: COLORES.superficie, 
+    borderRadius: 16, 
     flex: 1,
     margin: 8,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORES.superficie, // Borde sutil
+    borderColor: COLORES.superficie,
   },
   cardImage: {
     width: '100%',
     height: 150,
     resizeMode: 'cover',
-    backgroundColor: COLORES.fondo, // Fondo para placeholder
+    backgroundColor: COLORES.fondo,
   },
   cardInfo: {
     padding: 12,
@@ -310,7 +306,7 @@ const styles = StyleSheet.create({
     fontWeight: '600' 
   },
   precio: { 
-    color: COLORES.acentoPrincipal, // Tu color
+    color: COLORES.acentoPrincipal,
     fontSize: 15, 
     fontWeight: '700', 
     marginTop: 6 
@@ -326,9 +322,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderColor: COLORES.fondo, // Divisor negro
+    borderColor: COLORES.fondo, 
   },
-  // --- Estilos de Badge (Rediseñados) ---
+  // --- Estilos de Badge ---
   disponibilidadBadge: {
     position: 'absolute',
     top: 8,
@@ -339,13 +335,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   disponible: {
-    backgroundColor: COLORES.acentoVerde, // Verde neón
+    backgroundColor: COLORES.acentoVerde, 
   },
   agotado: {
-    backgroundColor: COLORES.acentoPrincipal, // Rojo neón
+    backgroundColor: COLORES.acentoPrincipal, 
   },
   disponibilidadTexto: {
-    color: '#000000', // Texto negro para alto contraste con neón
+    color: '#000000',
     fontSize: 11,
     fontWeight: 'bold',
   },

@@ -6,7 +6,6 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 
-// Tu paleta de colores
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -43,7 +42,7 @@ const CustomDrawer = (props) => {
   return (
     <View style={styles.container}>
       <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
-        {/* 1. Header del Drawer */}
+        {/* Header del Drawer */}
         <View style={styles.header}>
           <View style={styles.avatarWrap}>
             
@@ -57,13 +56,13 @@ const CustomDrawer = (props) => {
           <Text style={styles.headerEmail}>{user?.email}</Text>
         </View>
 
-        {/* 2. Items de Navegación (Home, Productos) */}
+        {/* Items de Navegación (Home, Productos) */}
         <View style={styles.itemContainer}>
           <DrawerItemList {...props} />
         </View>
       </DrawerContentScrollView>
 
-      {/*  Footer (Cerrar Sesión) */}
+      {/* Footer (Cerrar Sesión) */}
       <View style={styles.footer}>
         <Pressable onPress={handleLogout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={22} color={COLORES.textoSecundario} />
@@ -77,11 +76,11 @@ const CustomDrawer = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORES.fondo, // Fondo negro
+    backgroundColor: COLORES.fondo,
   },
   header: {
     padding: 20,
-    backgroundColor: COLORES.superficie, // "Casi negro"
+    backgroundColor: COLORES.superficie,
     borderBottomWidth: 1,
     borderBottomColor: COLORES.acentoPrincipal,
   },

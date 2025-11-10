@@ -9,8 +9,8 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   ScrollView,
-  SafeAreaView, // --- NUEVO ---
-  StatusBar,    // --- NUEVO ---
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { auth } from '../src/config/firebaseConfig';
@@ -24,7 +24,6 @@ import Animated, {
 
 const { width, height } = Dimensions.get("window");
 
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -43,16 +42,14 @@ export default function ForgotPasswordScreen({ navigation }) {
   const emailAnim = useSharedValue(0);
   const emailLabelStyle = useAnimatedStyle(() => ({
     position: 'absolute',
-    left: 45, // Ajustado para el icono
+    left: 45,
     top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),
     fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
     color: emailAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario,
-    backgroundColor: COLORES.superficie, // Para tapar el borde
+    backgroundColor: COLORES.superficie,
     paddingHorizontal: 4,
-    zIndex: 1, // Asegura que esté sobre el borde
+    zIndex: 1,
   }));
-
-  // (underLineStyle ya no se usa)
 
   useEffect(() => {
     if ((typeMessage === "error" || typeMessage === "success") && email) {
@@ -61,7 +58,6 @@ export default function ForgotPasswordScreen({ navigation }) {
     }
   }, [email]);
 
-  // (handleResetPassword se mantiene 100% igual)
   const handleResetPassword = () => {
     if (!email) {
       setTypeMessage("error");
@@ -88,7 +84,6 @@ export default function ForgotPasswordScreen({ navigation }) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* --- CAMBIO: Sin ImageBackground --- */}
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           
           <Text style={styles.titulo}>Recuperar contraseña</Text>
@@ -109,7 +104,6 @@ export default function ForgotPasswordScreen({ navigation }) {
             </Animated.Text>
           )}
 
-          {/* --- CAMBIO: Input rediseñado --- */}
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope" size={20} color={COLORES.textoSecundario} style={styles.icon} />
             <Animated.Text style={emailLabelStyle}>Correo electrónico</Animated.Text>
@@ -142,7 +136,6 @@ export default function ForgotPasswordScreen({ navigation }) {
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -154,9 +147,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  // (formContainer eliminado, se integra al scroll)
-  titulo: { // (Antes 'logoText')
-    fontSize: 22, // Título consistente
+  titulo: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: COLORES.textoPrincipal,
     marginBottom: 10,
@@ -167,7 +159,7 @@ const styles = StyleSheet.create({
     color: COLORES.textoSecundario,
     marginBottom: 20,
     fontSize: 14,
-    paddingHorizontal: 20, // Para que no sea tan ancho
+    paddingHorizontal: 20,
   },
   message: {
     marginBottom: 15,
@@ -181,7 +173,6 @@ const styles = StyleSheet.create({
   successMessage: {
     color: COLORES.acentoVerde, // Verde
   },
-  // --- CAMBIO: Estilo de Input (consistente con Login) ---
   inputContainer: {
     backgroundColor: COLORES.superficie,
     borderRadius: 16,
@@ -204,9 +195,8 @@ const styles = StyleSheet.create({
     color: COLORES.textoPrincipal,
     fontSize: 16,
   },
-  // (underline eliminado)
   submitBtn: {
-    backgroundColor: COLORES.acentoAzul, // Color de acción
+    backgroundColor: COLORES.acentoAzul,
     borderRadius: 16,
     paddingVertical: 14,
     width: '100%',
@@ -219,11 +209,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   signupText: {
-    color: COLORES.textoPrincipal, // <-- CAMBIO
-    marginTop: 20, // Más espacio
+    color: COLORES.textoPrincipal,
+    marginTop: 20,
   },
   link: {
-    color: COLORES.acentoPrincipal, // Tu color
+    color: COLORES.acentoPrincipal,
     fontWeight: '600',
   },
 });

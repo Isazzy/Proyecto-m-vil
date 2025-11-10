@@ -18,30 +18,30 @@ import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming } fr
 const { width, height } = Dimensions.get("window");
 const COLORES = {
   fondo: '#000000',
-  superficie: '#190101', //190101
+  superficie: '#190101',
   textoPrincipal: '#FEE6E6', 
   textoSecundario: '#A0A0A0', 
-  acentoPrincipal: '#FB5B5B', //FB5B5B
-  acentoAzul: '#6ba1c1ff',     //6ba1c1ff
+  acentoPrincipal: '#FB5B5B', 
+  acentoAzul: '#6ba1c1ff',
 };
 
 export default function Login({ navigation }) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('');//rastrea multiples piezas de estado
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);//ver/ocultar
   const [remember, setRemember] = useState(false);
   const [message, setMessage] = useState(null);
-  const [typeMessage, setTypeMessage] = useState(null);
+  const [typeMessage, setTypeMessage] = useState(null);//Mensaje de exito o error al usuario
   const [emailError, setEmailError] = useState(null);
 
   // Animaciones de labels
-  const emailAnim = useSharedValue(0);
+  const emailAnim = useSharedValue(0);//Crea 2 "valores compartidos"
   const passAnim = useSharedValue(0);
 
-  const emailLabelStyle = useAnimatedStyle(() => ({
+  const emailLabelStyle = useAnimatedStyle(() => ({//estilos que relacionan a los cambios de esos valores compartidos
     position: 'absolute',
     left: 45, 
-    top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),
+    top: withTiming(emailAnim.value ? -10 : 15, { duration: 200 }),//withTiming, anima las propiedades suavemente cuando el valor compartido cambia
     fontSize: withTiming(emailAnim.value ? 13 : 16, { duration: 200 }),
     color: emailAnim.value ? COLORES.acentoPrincipal : COLORES.textoSecundario, 
     paddingHorizontal: 4,
@@ -69,15 +69,15 @@ export default function Login({ navigation }) {
   };
 
   useEffect(() => {
-    const loadCredentials = async () => {
+    const loadCredentials = async () => {//funcion async, se ejecuta una sola vez cuando el componente carga
       try {
-        const savedEmail = await AsyncStorage.getItem("email");
+        const savedEmail = await AsyncStorage.getItem("email");//lee email y password desde asyncstorage
         const savedPassword = await AsyncStorage.getItem("password");
-        if (savedEmail && savedPassword) {
+        if (savedEmail && savedPassword) {//Actualiza el estado si los encuentra
           setEmail(savedEmail);
           setPassword(savedPassword);
           setRemember(true);
-          emailAnim.value = 1;
+          emailAnim.value = 1;//actualiza los valores de animacion
           passAnim.value = 1;
         }
       } catch (error) {
@@ -88,19 +88,19 @@ export default function Login({ navigation }) {
     loadCredentials();
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {//se ejecuta cada vez que email o password cambia, si habia un mensaje de error, lo limpia
     if (typeMessage === "error" && email && password) setMessage(null);
   }, [email, password]);
 
   
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!email || !password) {//Comprueba que los campos no estén vacios
       setTypeMessage("error");
       setMessage("Por favor complete ambos campos.");
       return;
     }
 
-    if (emailError) {
+    if (emailError) {//o error de formato de email
       setTypeMessage("error");
       setMessage(emailError);
       return;
@@ -110,14 +110,14 @@ export default function Login({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       // const user = userCredential.user;
 
-      if (remember) {
+      if (remember) {//guarda las credenciales en AsyncStorage
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("password", password);
-      } else {
+      } else {//elimina cualquier credencial guardada
         await AsyncStorage.removeItem("email");
         await AsyncStorage.removeItem("password");
       }
-      navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] }); //el usuario no puede presionar "atrás" para volver al login
     } catch (error) {
       let errorMessage = "Correo y/o contraseña incorrectas.";
       switch (error.code) {
@@ -142,7 +142,7 @@ export default function Login({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled"> {/* envuelve todo para que el form */}
         
         
         <Animated.Text entering={FadeInDown.duration(1600)} style={styles.title}>
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: COLORES.acentoPrincipal, // Tu color original
+    borderColor: COLORES.acentoPrincipal, 
     marginBottom: height * 0.04,
   },
   icon: {
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: 'space-between',
     marginVertical: height * 0.015,
-    marginTop: -10, // Sube las opciones
+    marginTop: -10,
   },
   remember: {
     flexDirection: 'row',
@@ -304,9 +304,9 @@ const styles = StyleSheet.create({
     color: COLORES.acentoPrincipal,
     fontSize: width * 0.030,
   },
-  // --- CAMBIO: Estilo de Botón ---
+  // --- Estilo de Botón ---
   button: {
-    backgroundColor: COLORES.superficie, // Azul para acción principal
+    backgroundColor: COLORES.superficie, 
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',

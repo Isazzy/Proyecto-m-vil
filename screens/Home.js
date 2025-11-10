@@ -1,38 +1,41 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';//UseMemo, useCallback, optimiza el rendimiento, useState useEffect: Maneja el estado y efecto secundarios
 import {
-  SafeAreaView,
+  SafeAreaView,//contenedor que evita que la UI s superponga con la barra de estado
   View,
   Text,
   StyleSheet,
   Image,
   ActivityIndicator,
   Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
+  FlatList,//componente optimizado para mostrar listas largas
+  Pressable,//componente para manejar toques
+  RefreshControl,//funcionalidad de "tirar para recargar"
   StatusBar,
-  useWindowDimensions,
+  useWindowDimensions,//hook para obtener el ancho y alto de la pantalla
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '../src/config/firebaseConfig';
+import { Ionicons } from '@expo/vector-icons';//biblioteca de iconos
+import { useAuthState } from 'react-firebase-hooks/auth';//tiempo real para saber si el usuario está logueado, cargando o si hay error
+import { auth, db } from '../src/config/firebaseConfig';//Config de autenticación y base de datos
 import { signOut } from 'firebase/auth';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore'; 
-import { BarChart } from 'react-native-chart-kit'; 
+import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore'; // funciones de firestore para consultar la bd en tiempo real
+import { BarChart } from 'react-native-chart-kit'; //biblioteca para el gráfico de barra
+
+
+
 
 const COLORES = {
   fondo: '#000000',
-  superficie: '#190101', // Tailwind-950 (Casi negro para "tarjetas")
-  textoPrincipal: '#FEE6E6', // Tailwind-50 (Blanco cálido)
-  textoSecundario: '#A0A0A0', // Gris neutral
+  superficie: '#190101',
+  textoPrincipal: '#FEE6E6',
+  textoSecundario: '#A0A0A0',
   
   acentoPrincipal: '#FB5B5B', 
-  acentoAzul: '#6ba1c1ff',     // Triádica
-  acentoVerde: '#5BFB5B',   // Triádica
+  acentoAzul: '#6ba1c1ff',
+  acentoVerde: '#5BFB5B',
 };
 
 
-//  Celda de Estadística 
+// solo recibe props que muestra un icono, valor y titulo, resumen de total productos, ventas, etc
 const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
   <View style={dashboardStyles.statCelda}>
     <Ionicons name={icono} size={24} color={colorIcono} />
@@ -41,7 +44,7 @@ const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
   </View>
 );
 
-//  Item de Top Producto 
+//  renderiza la tarjeta para la lista de Top Productos, imagen, nombre, stock y precio
 const TopProductoItem = ({ item }) => (
   <Pressable style={dashboardStyles.topProductoCard}>
     <Image
@@ -62,7 +65,7 @@ const TopProductoItem = ({ item }) => (
   </Pressable>
 );
 
-//  Botón de Acceso Rápido 
+//renderiza botones para los accesos
 const AccesoRapidoItem = ({ item, onPress }) => (
   <Pressable
     onPress={() => onPress(item.screen)}
@@ -250,7 +253,7 @@ export default function Home({ navigation }) {
     { id: '4D', icon: 'calculator-sharp', titulo: 'Servicios', screen: 'Servicios' },
     { id: '5', icon: 'person-add-sharp', titulo: 'Proveedores', screen: 'Proveedores' },
     { id: '6', icon: 'cart-sharp', titulo: 'Compras', screen: 'Compras' },
-  ], []); // Reducido a 6 para un grid perfecto de 3x2
+  ], []);
   
   const handleLogout = useCallback(() => { 
     Alert.alert('Cerrar sesión', '¿Querés cerrar sesión?', [
@@ -269,7 +272,7 @@ export default function Home({ navigation }) {
         },
       },
     ]);
-  }, [navigation]); // Añadido navigation
+  }, [navigation]);
   
   const handleOpenScreen = useCallback((screenName) => { 
     if (!screenName) {
@@ -277,12 +280,11 @@ export default function Home({ navigation }) {
       return;
     }
     navigation.navigate(screenName);
-  }, [navigation]); // Añadido navigation
+  }, [navigation]);
   
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => { 
     setRefreshing(true);
-    // (Podrías re-llamar tus funciones de fetch aquí si no usaras onSnapshot)
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
@@ -294,7 +296,7 @@ export default function Home({ navigation }) {
       <View style={styles.header}>
         <Pressable
           style={styles.iconBtn}
-          onPress={() => navigation.openDrawer()} // <-- ABRE EL MENÚ
+          onPress={() => navigation.openDrawer()}
         >
           <Ionicons name="menu-sharp" size={26} color={COLORES.textoSecundario} />
         </Pressable>
@@ -364,23 +366,23 @@ export default function Home({ navigation }) {
   );
 }
 
-// --- ESTILOS PRINCIPALES (con botón de menú) ---
+// --- ESTILOS PRINCIPALES ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORES.fondo, // Fondo negro sólido
+    backgroundColor: COLORES.fondo,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORES.fondo, // Integrado al fondo
-    borderBottomWidth: 1, // Borde sutil
+    backgroundColor: COLORES.fondo,
+    borderBottomWidth: 1,
     borderBottomColor: COLORES.superficie,
   },
   iconBtn: {
-    marginRight: 10, // Ajuste de margen
+    marginRight: 10,
     padding: 4,
   },
   avatarWrap: {
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORES.superficie,
-    marginLeft: 10, // Margen añadido
+    marginLeft: 10,
   },
   avatarImage: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -412,7 +414,7 @@ const styles = StyleSheet.create({
   errorText: { color: COLORES.acentoPrincipal, fontWeight: '600' },
 });
 
-// --- ESTILOS DEL DASHBOARD (Rediseñados) ---
+// --- ESTILOS DEL DASHBOARD ---
 const dashboardStyles = StyleSheet.create({
   dashboardContainer: {
     width: '100%',
@@ -427,7 +429,7 @@ const dashboardStyles = StyleSheet.create({
     marginBottom: 16,
   },
   
-  // 1. Estilos de Estadísticas (NUEVO DISEÑO)
+  // Estilos de Estadísticas 
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -453,7 +455,7 @@ const dashboardStyles = StyleSheet.create({
     marginTop: 4,
   },
   
-  // 2. Estilo para el contenedor del gráfico
+  // Estilo para el contenedor del gráfico
   graficoContainer: {
     backgroundColor: COLORES.superficie,
     borderRadius: 16,
@@ -463,7 +465,7 @@ const dashboardStyles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // 3. Estilos de Top Productos
+  // Estilos de Top Productos
   topProductoList: {
     paddingHorizontal: 16,
   },
@@ -503,7 +505,7 @@ const dashboardStyles = StyleSheet.create({
     marginLeft: 10,
   },
 
-  // 4. Estilos de Accesos Rápidos (NUEVO GRID)
+  // Estilos de Accesos Rápidos
   accesosGridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -511,7 +513,7 @@ const dashboardStyles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   accesoBoton: {
-    width: '30%', // 3 columnas
+    width: '30%',
     backgroundColor: COLORES.superficie,
     borderRadius: 16,
     paddingVertical: 16,

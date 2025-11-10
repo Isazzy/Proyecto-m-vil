@@ -16,9 +16,7 @@ import SelectorTipo from '../src/config/componentes/selectores/SelectorTipoG';
 
 const CLOUDINARY_CLOUD_NAME = 'diqndk92p';
 const CLOUDINARY_UPLOAD_PRESET = 'mitiempo_mobile'; 
-// ---
 
-// --- PALETA DE COLORES "NEÓN OSCURO" ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -28,7 +26,7 @@ const COLORES = {
   acentoAzul: '#6ba1c1ff',
 };
 
-// (Función calcularEdad se mantiene igual)
+// Función calcularEdad
 const calcularEdad = (fechaNac) => {
   const hoy = new Date();
   const cumple = new Date(fechaNac);
@@ -41,7 +39,6 @@ const calcularEdad = (fechaNac) => {
 };
 
 export default function EditarPerfil({ navigation }) {
-  // (Todos los 'useState' se mantienen igual)
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [dni, setDni] = useState(''); 
@@ -53,7 +50,6 @@ export default function EditarPerfil({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  // (useEffect de cargarDatos se mantiene igual)
   useEffect(() => {
     const cargarDatos = async () => {
       if (!auth.currentUser) return;
@@ -86,7 +82,6 @@ export default function EditarPerfil({ navigation }) {
     cargarDatos();
   }, []);
 
-  // (formatFecha se mantiene igual)
   const formatFecha = (date) => {
     if (!date) return 'Seleccionar fecha...';
     const hoy = new Date();
@@ -96,7 +91,6 @@ export default function EditarPerfil({ navigation }) {
     return date.toLocaleDateString('es-ES');
   };
 
-  // (cambiarFoto se mantiene igual)
   const cambiarFoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ 
       allowsEditing: true, 
@@ -108,16 +102,14 @@ export default function EditarPerfil({ navigation }) {
     }
   };
 
-  // --- CAMBIO: Función de subida a Cloudinary ---
+  // --- Función de subida a Cloudinary ---
   const subirImagen = async (uri) => {
     const formData = new FormData();
-    // 'file' es el nombre del campo que Cloudinary espera
     formData.append('file', {
       uri: uri,
-      type: `image/${uri.split('.').pop()}`, // Ej: 'image/jpeg'
+      type: `image/${uri.split('.').pop()}`,
       name: `upload.${uri.split('.').pop()}`,
     });
-    // 'upload_preset' es tu preset "sin firmar" (unsigned)
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
@@ -131,7 +123,7 @@ export default function EditarPerfil({ navigation }) {
 
       const data = await response.json();
       if (data.secure_url) {
-        return data.secure_url; // Esta es la URL que guardamos en Firestore
+        return data.secure_url;
       } else {
         throw new Error(data.error?.message || 'Error al subir a Cloudinary');
       }
@@ -140,11 +132,9 @@ export default function EditarPerfil({ navigation }) {
       throw err; 
     }
   };
-  // --- FIN DEL CAMBIO ---
 
-  // --- CAMBIO: Lógica de Guardar (con subida a Cloudinary) ---
+  // --- Lógica de Guardar (con subida a Cloudinary) ---
   const guardarPerfil = async () => {
-    // (Validaciones se mantienen igual)
     if (!nombre.trim() || !apellido.trim() || !genero || !dni.trim()) {
       Alert.alert('Campos Incompletos', 'Completa todos los campos obligatorios (*).');
       return;
@@ -163,10 +153,7 @@ export default function EditarPerfil({ navigation }) {
     setLoading(true);
     try {
       let finalImageURL = originalData.photoURL; 
-
-      // Si la imagen local es diferente a la URL original (se cambió)
       if (localImage && localImage !== originalData.photoURL) {
-        // --- CAMBIO: Llamamos a la nueva función ---
         finalImageURL = await subirImagen(localImage); 
       }
       
@@ -179,7 +166,7 @@ export default function EditarPerfil({ navigation }) {
         dni: dni.trim(),
         genero: genero,
         fechaNacimiento: Timestamp.fromDate(fechaNacimiento),
-        photoURL: finalImageURL // <-- Aquí se guarda la URL de Cloudinary
+        photoURL: finalImageURL
       };
 
       await setDoc(userDocRef, datosActualizados, { merge: true });
@@ -199,7 +186,6 @@ export default function EditarPerfil({ navigation }) {
     }
   };
 
-  // (handleCancelar se mantiene igual)
   const handleCancelar = () => {
     if (!originalData) {
       navigation.goBack(); 
@@ -229,7 +215,6 @@ export default function EditarPerfil({ navigation }) {
     );
   };
 
-  // (El JSX/return se mantiene 100% igual)
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />
@@ -302,7 +287,6 @@ export default function EditarPerfil({ navigation }) {
   );
 }
 
-// (Los estilos 'Neón Oscuro' se mantienen 100% igual)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -333,7 +317,7 @@ const styles = StyleSheet.create({
   cameraIcon: { 
     position: 'absolute',
     bottom: 10, 
-    right: (View.width / 2) - 80, // (Ajuste menor, usa Dimensions si da error)
+    right: (View.width / 2) - 80,
     backgroundColor: COLORES.acentoAzul, 
     padding: 8, 
     borderRadius: 20 

@@ -3,8 +3,8 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  Dimensions, 
-  StatusBar,
+  Dimensions, //Obtiene el ancho y alto de la pantalla, para estilos responsivos
+  StatusBar,//Controla el estilo de la barra de estado del teléfoo 
   ImageBackground
 } from 'react-native';
 // --- CAMBIO: Importamos 'FadeIn' para el texto 'MI TIEMPO' ---
@@ -19,18 +19,18 @@ const COLORES = {
 };
 
 export default function SplashScreen({ navigation }) {
-  useEffect(() => {
+  useEffect(() => {//Hokk, se ejecuta una vez
     const timer = setTimeout(() => {
-      navigation.replace("Login"); 
+      navigation.replace("Login"); //replace reemplaza la pantalla actual
     }, 4000); 
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer); //funcion de limpieza, si se cierra la app, cancela el temporizador
   }, [navigation]);
 
   return (
     <ImageBackground
       source={require('../assets/Splash.png')} 
       style={styles.container}
-      resizeMode="cover"
+      resizeMode="cover"//Asegura que llene la pantalla sin distorsionarse
     >
       <View style={styles.contentOverlay}> 
         <StatusBar barStyle="light-content" backgroundColor={COLORES.fondo} />

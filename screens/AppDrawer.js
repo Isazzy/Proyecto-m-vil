@@ -1,5 +1,4 @@
 import React from 'react';
-// --- CAMBIO: Añadimos View, Text, StyleSheet ---
 import { View, Text, StyleSheet } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,10 +9,10 @@ import CustomDrawer from './CustomDrawer';
 // Importa las pantallas (o Stacks)
 import Home from '../screens/Home';
 import ProductosStack from './ProductosStack';
-import Perfil from '../screens/Perfil'; // Importamos Perfil
+import Perfil from '../screens/Perfil';
 import Productos from './Productos';
 
-// --- PALETA DE COLORES (copiada de CustomDrawer) ---
+// --- PALETA DE COLORES ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -23,7 +22,7 @@ const COLORES = {
   acentoAzul: '#5B5BFB',
 };
 
-// --- NUEVO: Componente temporal para pantallas en construcción ---
+// --- Componente temporal para pantallas en construcción ---
 const PlaceholderScreen = ({ route }) => (
   <View style={styles.placeholderContainer}>
     <Ionicons name="construct-outline" size={50} color={COLORES.acentoPrincipal} />
@@ -41,7 +40,7 @@ const Drawer = createDrawerNavigator();
 export default function AppDrawer() {
   return (
     <Drawer.Navigator
-      // Usamos nuestro diseño personalizado
+      
       drawerContent={(props) => <CustomDrawer {...props} />}
       
       // Opciones para todas las pantallas del Drawer
@@ -51,8 +50,8 @@ export default function AppDrawer() {
           backgroundColor: COLORES.fondo,
           width: 260,
         },
-        drawerActiveTintColor: COLORES.acentoPrincipal, // Color del item activo (tu rojo)
-        drawerInactiveTintColor: COLORES.textoSecundario, // Color de items inactivos
+        drawerActiveTintColor: COLORES.acentoPrincipal, 
+        drawerInactiveTintColor: COLORES.textoSecundario, 
         drawerLabelStyle: {
           marginLeft: -20,
           fontSize: 15,
@@ -81,7 +80,7 @@ export default function AppDrawer() {
         }}
       />
       
-      {/* --- AQUÍ ESTÁN LOS NUEVOS BOTONES --- */}
+      {/* --- NUEVOS BOTONES --- */}
       
       <Drawer.Screen 
         name="Agenda" 
@@ -145,7 +144,7 @@ export default function AppDrawer() {
         name="Perfil" 
         component={Perfil} 
         options={{
-          drawerItemStyle: { display: 'none' } // Oculta del menú
+          drawerItemStyle: { display: 'none' } 
         }}
       />
 
@@ -153,7 +152,7 @@ export default function AppDrawer() {
   );
 }
 
-// --- NUEVO: Estilos para el Placeholder ---
+// --- Estilos para el Placeholder ---
 const styles = StyleSheet.create({
   placeholderContainer: {
     flex: 1,

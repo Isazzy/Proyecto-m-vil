@@ -6,7 +6,6 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 
-// Tu paleta de colores
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',
@@ -31,7 +30,6 @@ const CustomDrawer = (props) => {
         onPress: async () => {
           try {
             await signOut(auth);
-            // Esto te saca del Drawer y te manda al Stack de Login
             props.navigation.replace('Auth'); 
           } catch (e) {
             Alert.alert('Error', e?.message ?? 'Intenta nuevamente.');
