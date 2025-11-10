@@ -24,24 +24,24 @@ const COLORES = {
 };
 
 const CeldaEstadistica = ({ icono, titulo, valor, colorIcono }) => (
-  <View style={dashboardStyles.statCelda}>
+  <View style={styles.statCelda}>
     <Ionicons name={icono} size={24} color={colorIcono} />
-    <Text style={dashboardStyles.statValor}>{valor}</Text>
-    <Text style={dashboardStyles.statTitulo}>{titulo}</Text>
+    <Text style={styles.statValor}>{valor}</Text>
+    <Text style={styles.statTitulo}>{titulo}</Text>
   </View>
 );
 
 const TopProductoItem = ({ item }) => (
-  <Pressable style={dashboardStyles.topProductoCard}>
+  <Pressable style={styles.topProductoCard}>
     <Image
       source={item.imagen ? { uri: item.imagen } : require('../assets/placeholder.png')}
-      style={dashboardStyles.topProductoImagen}
+      style={styles.topProductoImagen}
     />
-    <View style={dashboardStyles.topProductoInfo}>
-      <Text style={dashboardStyles.topProductoNombre} numberOfLines={1}>{item.nombre}</Text>
-      <Text style={dashboardStyles.topProductoStock}>Stock: {item.cantidad}</Text>
+    <View style={styles.topProductoInfo}>
+      <Text style={styles.topProductoNombre} numberOfLines={1}>{item.nombre}</Text>
+      <Text style={styles.topProductoStock}>Stock: {item.cantidad}</Text>
     </View>
-    <Text style={dashboardStyles.topProductoPrecio}>${item.precio}</Text>
+    <Text style={styles.topProductoPrecio}>${item.precio}</Text>
   </Pressable>
 );
 
@@ -49,14 +49,14 @@ const AccesoRapidoItem = ({ item, onPress }) => (
   <Pressable
     onPress={() => onPress(item.screen)}
     style={({ pressed }) => [
-      dashboardStyles.accesoBoton,
+      styles.accesoBoton,
       pressed && { backgroundColor: COLORES.superficie },
     ]}
   >
-    <View style={[dashboardStyles.accesoIconoBg, { backgroundColor: COLORES.acentoAzul }]}>
+    <View style={[styles.accesoIconoBg, { backgroundColor: COLORES.acentoAzul }]}>
       <Ionicons name={item.icon} size={30} color={COLORES.textoPrincipal} />
     </View>
-    <Text style={dashboardStyles.accesoTitulo}>{item.titulo}</Text>
+    <Text style={styles.accesoTitulo}>{item.titulo}</Text>
   </Pressable>
 );
 
@@ -69,9 +69,9 @@ const RenderDashboardHeader = ({
   const nuevosClientes = '12';
 
   return (
-    <View style={dashboardStyles.dashboardContainer}>
-      <Text style={dashboardStyles.tituloSeccion}>Resumen</Text>
-      <View style={dashboardStyles.statsContainer}>
+    <View style={styles.dashboardContainer}>
+      <Text style={styles.tituloSeccion}>Resumen</Text>
+      <View style={styles.statsContainer}>
         <CeldaEstadistica icono="pricetags-sharp" titulo="Total Productos"
           valor={loadingProductos ? '...' : totalProductos} colorIcono={COLORES.acentoPrincipal} />
         <CeldaEstadistica icono="cash-sharp" titulo="Ventas del Mes"
@@ -81,13 +81,13 @@ const RenderDashboardHeader = ({
       </View>
 
       {/*Gráfico de Barras  */}
-      <Text style={dashboardStyles.tituloSeccion}>Productos por Categoría</Text>
-      <View style={dashboardStyles.graficoContainer}>
+      <Text style={styles.tituloSeccion}>Productos por Categoría</Text>
+      <View style={styles.graficoContainer}>
         {loadingGraficoBarras ? (
           <ActivityIndicator color={COLORES.acentoAzul} style={{ height: 280 }} />
         ) : (
           <>
-            <Text style={dashboardStyles.ejeYLabel}>Productos</Text>
+            <Text style={styles.ejeYLabel}>Productos</Text>
             <BarChart
               data={{
                 labels: datosGraficoBarras.map(d => d.label),
@@ -108,13 +108,13 @@ const RenderDashboardHeader = ({
               }}
               style={{ borderRadius: 16 }}
             />
-            <Text style={dashboardStyles.ejeXLabel}>Categoría</Text>
+            <Text style={styles.ejeXLabel}>Categoría</Text>
           </>
         )}
       </View>
 
-      <Text style={dashboardStyles.tituloSeccion}>Productos Nuevos</Text>
-      <View style={dashboardStyles.topProductoList}>
+      <Text style={styles.tituloSeccion}>Productos Nuevos</Text>
+      <View style={styles.topProductoList}>
         {loadingTopProductos ? (
           <ActivityIndicator color={COLORES.textoPrincipal} style={{ marginVertical: 20 }} />
         ) : (
@@ -122,8 +122,8 @@ const RenderDashboardHeader = ({
         )}
       </View>
 
-      <Text style={dashboardStyles.tituloSeccion}>Accesos Rápidos</Text>
-      <View style={dashboardStyles.accesosGridContainer}>
+      <Text style={styles.tituloSeccion}>Accesos Rápidos</Text>
+      <View style={styles.accesosGridContainer}>
         {items.map(item => (
           <AccesoRapidoItem key={item.id} item={item} onPress={handleOpenScreen} />
         ))}
