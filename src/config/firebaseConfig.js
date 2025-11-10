@@ -23,7 +23,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyD4vl9Y8KJHAh6uGgv6U6N2JGkF0eXpRqQ",
   authDomain: "mobileapp-efd20.firebaseapp.com",
   projectId: "mobileapp-efd20",
-  storageBucket: "mobileapp-efd20.appspot.com",
+  storageBucket: "mobileapp-efd20.firebasestorage.app",
   messagingSenderId: "330520281855",
   appId: "1:330520281855:web:daca5f61f0127be22bc2ca",
   measurementId: "G-PTLCF2XTNE"
@@ -35,12 +35,12 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 // RN: usar initializeAuth con persistencia. Web: getAuth normal.
 let auth;
 if (Platform.OS === 'web') {
-  auth = getAuth(app);
+  auth = initializeAuth(app);
 } else {
   // Intentá inicializar Auth con persistencia (solo 1 vez).
   try {
     auth = initializeAuth(app, {
-      persistence: getReactNativePersistence(AsyncStorage),
+      persistence: getReactNativePersistence(ReactNativeAsyncStorage),
     });
   } catch (e) {
     // Si ya existía un Auth inicializado, usamos el existente

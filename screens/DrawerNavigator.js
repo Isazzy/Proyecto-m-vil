@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   drawerText: {
-    color: '#fff',
+    color: '#ff5b5b',
     fontSize: 16,
     marginLeft: 12,
     fontWeight: '500',

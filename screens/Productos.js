@@ -9,7 +9,10 @@ import {
   Pressable, 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { 
+  collection, getDocs, deleteDoc, doc, 
+  query, orderBy, limit, startAfter  // Agregados para paginación
+} from 'firebase/firestore';
 import { db } from '../src/config/firebaseConfig'; 
 
 const COLORES = {
@@ -24,6 +27,17 @@ const COLORES = {
 };
 
 const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros']; 
+const PAGE_SIZE = 10;  // Tamaño de página para paginación
+
+// Función para construir la query de Firestore con paginación
+const buildBaseQuery = (isNextPage = false, lastDoc = null) => {
+  let q = collection(db, 'productos');
+  q = query(q, orderBy('nombre'), limit(PAGE_SIZE));  // Ordena por nombre (cambia si necesitas otro campo)
+  if (isNextPage && lastDoc) {
+    q = query(q, startAfter(lastDoc));
+  }
+  return q;
+};
 
 const ProductoCard = ({ item, navigation, onEliminar }) => {
   const handleVer = () => navigation.navigate('VerProducto', { item });
@@ -75,14 +89,20 @@ export default function Productos({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
+  // Variables agregadas para paginación
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const fetchProductos = useCallback(async () => {
     try {
       if (!refreshing) setLoading(true);
-      const snapshot = await getDocs(collection(db, 'productos'));
+      const q = buildBaseQuery();  // Primera página
+      const snapshot = await getDocs(q);
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProductos(data);
-      setLastDoc(snap.docs.length ? snap.docs[snap.docs.length - 1] : null);
-      setHasMore(snap.docs.length === PAGE_SIZE);
+      setLastDoc(snapshot.docs.length ? snapshot.docs[snapshot.docs.length - 1] : null);
+      setHasMore(snapshot.docs.length === PAGE_SIZE);
     } catch (e) {
       Alert.alert('Error', 'No se pudieron cargar los productos');
     } finally {
@@ -96,18 +116,18 @@ export default function Productos({ navigation }) {
     try {
       setLoadingMore(true);
       const q = buildBaseQuery(true, lastDoc);
-      const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, _snap: d, ...d.data() }));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       setProductos(prev => [...prev, ...data]);
-      setLastDoc(snap.docs.length ? snap.docs[snap.docs.length - 1] : null);
-      setHasMore(snap.docs.length === PAGE_SIZE);
+      setLastDoc(snapshot.docs.length ? snapshot.docs[snapshot.docs.length - 1] : null);
+      setHasMore(snapshot.docs.length === PAGE_SIZE);
     } catch {
       // no-op suave
     } finally {
       setLoadingMore(false);
     }
-  }, [buildBaseQuery, hasMore, lastDoc, loadingMore]);
+  }, [hasMore, lastDoc, loadingMore]);
 
   // Primera carga y cuando cambia el orden
   useEffect(() => {
@@ -132,7 +152,7 @@ export default function Productos({ navigation }) {
           text: 'Eliminar', style: 'destructive',
           onPress: async () => {
             await deleteDoc(doc(db, 'productos', id));
-            fetchFirstPage();
+            fetchProductos();  // Cambiado de fetchFirstPage a fetchProductos
           }
         }
       ]
@@ -217,6 +237,9 @@ export default function Productos({ navigation }) {
               tintColor={COLORES.acentoPrincipal} 
             />
           }
+          onEndReached={fetchNextPage}  // Carga más al llegar al final
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={COLORES.acentoPrincipal} /> : null}
           ListEmptyComponent={<Text style={styles.emptyText}>No hay productos.</Text>}
         />
       )}
@@ -224,7 +247,7 @@ export default function Productos({ navigation }) {
   );
 }
 
-// --- ESTILOS "NEÓN OSCURO" ---
+// --- ESTILOS "NEÓN OSCURO" --- (Sin cambios)
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 

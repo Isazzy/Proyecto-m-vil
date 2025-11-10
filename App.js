@@ -15,6 +15,7 @@ import VerProducto from './screens/VerProducto'
 
 import { useFonts } from 'expo-font';
 
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,7 +25,7 @@ export default function App() {
   });
 
   // Pantalla de carga mientras esperan fuentes + auth
-  if (!fontsLoaded || !authReady) {
+  if (!fontsLoaded || !onAuthStateChanged) {
     return <SplashScreen />;
   }
 
