@@ -155,7 +155,7 @@ const RenderDashboardHeader = ({
       </View>
 
       {/* Top Productos */}
-      <Text style={dashboardStyles.tituloSeccion}>Top Productos</Text>
+      <Text style={dashboardStyles.tituloSeccion}>Productos Nuevos</Text>
       <View style={dashboardStyles.topProductoList}>
         {loadingTopProductos ? (
           <ActivityIndicator color={COLORES.textoPrincipal} style={{ marginVertical: 20 }} />

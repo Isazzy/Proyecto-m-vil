@@ -3,9 +3,9 @@ import {
   View, Text, FlatList, StyleSheet, ActivityIndicator,
   TouchableOpacity, Alert, RefreshControl,
   Image, 
-  SafeAreaView, 
   StatusBar, 
   Pressable, 
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
@@ -23,6 +23,7 @@ const COLORES = {
 };
 
 const tipos = ['Todos', 'Skincare', 'Cabello', 'Uñas', 'Maquillaje', 'Otros']; 
+const estados = ['Activos', 'Inactivos', 'Todos']
 
 const ProductoCard = ({ item, navigation, onEliminar }) => {
   const handleVer = () => navigation.navigate('VerProducto', { item });
@@ -74,6 +75,9 @@ export default function Productos({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tipoFiltro, setTipoFiltro] = useState('Todos');
+  const [estadoFilto, setEstadoFiltro] = useState('Activos');
+  const [busqueda, setBusqueda] = useState('');
+
   const fetchProductos = useCallback(async () => {
     try {
       if (!refreshing) setLoading(true);
@@ -117,10 +121,19 @@ export default function Productos({ navigation }) {
     );
   };
 
-  const productosFiltrados =
-    tipoFiltro === 'Todos'
-      ? productos
-      : productos.filter(p => p.tipo === tipoFiltro);
+  const productosFiltrados = productos.filter(p=> {
+    const coincideTipo = tipoFiltro == 'Todos' || p.tipo === tipoFiltro;
+    const coincideEstado =
+    estadoFilto === 'Todos' ||
+    (estadoFilto === 'Activos' && p.activo === true) || 
+    (estadoFilto == 'Inactivos' && p.activo === false);
+
+    const coincidebusqueda = p.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    String(p.precio).includes(busqueda) ||
+    String(p.cantidad).includes(busqueda);
+
+    return coincideTipo && coincideEstado && coincidebusqueda;
+  })
 
   return (
     <View style={styles.container}>
@@ -160,6 +173,37 @@ export default function Productos({ navigation }) {
             </TouchableOpacity>
           )}
         />
+        <FlatList
+        data={estados}
+        keyExtractor={(item)=>item}
+        horizontal showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtroscontainer}
+        renderItem={({item})=>(
+          <TouchableOpacity
+          style={[styles.filtroBtn, estadoFilto === item && styles.filtroActivo,]}
+          onPress={() => setEstadoFiltro(item)}
+          >
+            <Text
+            style={[styles.filtroText, estadoFilto === item && styles.filtroTextActivo,]}
+            >
+              {item}
+            </Text>
+
+          </TouchableOpacity>
+        )}
+      />
+
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color={COLORES.textoSecundario} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar por nombre, precio o stock..."
+          placeholderTextColor={COLORES.textoSecundario}
+          value={busqueda}
+          onChangeText={setBusqueda}
+        />
+      </View>
+
       </View>
       <TouchableOpacity
         style={styles.addButton}
@@ -213,12 +257,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16, // Espacio superior
-    paddingBottom: 0, // El título ya tiene padding
+    paddingTop: 16,
+    paddingBottom: 0, 
   },
   iconBtn: {
     padding: 4,
-    marginRight: 15, // Espacio entre el icono y el título
+    marginRight: 15, 
   },
   titulo: { 
     fontSize: 22, 
@@ -229,7 +273,9 @@ const styles = StyleSheet.create({
   // --- Estilos de Filtros---
   filtrosContainer: {
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
+    marginHorizontal: -15
+    
   },
   filtroBtn: {
     backgroundColor: COLORES.superficie,
@@ -239,10 +285,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 1,
     borderColor: COLORES.superficie,
+    marginHorizontal: 16
+    
   },
   filtroActivo: { 
     backgroundColor: COLORES.acentoPrincipal, 
     borderColor: COLORES.acentoPrincipal,
+    
   },
   filtroText: { 
     color: COLORES.textoPrincipal, 
@@ -261,6 +310,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
+  },
+
+  filtroTextActivo:{
+    color: COLORES.textoPrincipal,
+    fontWeight: '700'
+  },
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORES.superficie, borderRadius: 16,
+    marginHorizontal: 16, paddingHorizontal: 12, marginBottom: 10, marginTop: 15,
+  },
+  searchInput: {
+    flex: 1, color: COLORES.textoPrincipal, marginLeft: 8, height: 40,
   },
   addButtonText: {
     color: COLORES.textoPrincipal,

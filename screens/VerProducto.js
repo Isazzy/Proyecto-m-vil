@@ -36,17 +36,48 @@ export default function VerProducto({ route }) {
             <Text style={{ color: COLORES.textoSecundario, marginTop: 8 }}>Sin imagen</Text>
           </View>
         )}
+
         <View style={styles.infoContainer}>
           <Text style={styles.tipo}>{item.tipo || 'Sin Categoría'}</Text>
           <Text style={styles.nombre}>{item.nombre}</Text>
+
+          {/* Marca */}
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Marca:</Text>
+            <Text style={styles.value}>{item.marca || 'Sin especificar'}</Text>
+          </View>
+
+          {/* Precio */}
           <View style={styles.infoBox}>
             <Text style={styles.label}>Precio:</Text>
             <Text style={[styles.value, styles.precioValue]}>${item.precio}</Text>
           </View>
 
+          {/* Stock actual */}
           <View style={styles.infoBox}>
-            <Text style={styles.label}>Stock (Cantidad):</Text>
+            <Text style={styles.label}>Stock actual:</Text>
             <Text style={styles.value}>{item.cantidad}</Text>
+          </View>
+
+          {/* Stock mínimo */}
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Stock mínimo:</Text>
+            <Text style={styles.value}>{item.stockMinimo ?? 'No definido'}</Text>
+          </View>
+
+          {/* Estado Activo / Inactivo */}
+          <View style={styles.infoBox}>
+            <Text style={styles.label}>Estado:</Text>
+            <Text 
+              style={[
+                styles.value, 
+                item.activo 
+                  ? styles.estadoActivo 
+                  : styles.estadoInactivo
+              ]}
+            >
+              {item.activo ? 'Activo' : 'Inactivo'}
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -60,8 +91,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORES.fondo,
   },
   image: {
-    width: width, // Ocupa todo el ancho
-    height: width, // Alto igual al ancho 
+    width: width, 
+    height: width, 
     resizeMode: 'cover',
   },
   noImage: {
@@ -89,7 +120,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', 
   },
   infoBox: {
-    backgroundColor: COLORES.superficie, // Color de tarjeta
+    backgroundColor: COLORES.superficie, 
     padding: 16,
     borderRadius: 16, 
     marginBottom: 12,
@@ -109,5 +140,11 @@ const styles = StyleSheet.create({
   precioValue: {
     color: COLORES.acentoPrincipal, 
     fontWeight: 'bold',
+  },
+  estadoActivo: {
+    color: '#4CAF50', // Verde
+  },
+  estadoInactivo: {
+    color: '#F44336', // Rojo
   },
 });

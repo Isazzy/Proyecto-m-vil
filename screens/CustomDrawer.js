@@ -25,7 +25,6 @@ const CustomDrawer = ({ navigation, state }) => {
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
-  // Map dinámico de items basado en screens declarados
   const drawerItems = state.routes.map((route) => {
     const iconsMap = {
       Home: 'home-outline',

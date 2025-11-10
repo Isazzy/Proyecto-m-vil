@@ -23,7 +23,6 @@ const COLORES = {
   acentoAzul: '#5B5BFB',
 };
 
-// --- NUEVO: Componente temporal para pantallas en construcción ---
 const PlaceholderScreen = ({ route }) => (
   <View style={styles.placeholderContainer}>
     <Ionicons name="construct-outline" size={50} color={COLORES.acentoPrincipal} />
@@ -41,18 +40,16 @@ const Drawer = createDrawerNavigator();
 export default function AppDrawer() {
   return (
     <Drawer.Navigator
-      // Usamos nuestro diseño personalizado
       drawerContent={(props) => <CustomDrawer {...props} />}
       
-      // Opciones para todas las pantallas del Drawer
       screenOptions={{
         headerShown: false,
         drawerStyle: {
           backgroundColor: COLORES.fondo,
           width: 260,
         },
-        drawerActiveTintColor: COLORES.acentoPrincipal, // Color del item activo (tu rojo)
-        drawerInactiveTintColor: COLORES.textoSecundario, // Color de items inactivos
+        drawerActiveTintColor: COLORES.acentoPrincipal, 
+        drawerInactiveTintColor: COLORES.textoSecundario, 
         drawerLabelStyle: {
           marginLeft: -20,
           fontSize: 15,
@@ -81,12 +78,10 @@ export default function AppDrawer() {
         }}
       />
       
-      {/* --- AQUÍ ESTÁN LOS NUEVOS BOTONES --- */}
-      
       <Drawer.Screen 
         name="Agenda" 
         component={PlaceholderScreen} 
-        initialParams={{ screenName: 'Agenda' }} // Pasa el nombre al placeholder
+        initialParams={{ screenName: 'Agenda' }} 
         options={{
           drawerLabel: 'Agenda',
           drawerIcon: ({ color }) => (
@@ -139,21 +134,17 @@ export default function AppDrawer() {
         }}
       />
 
-      {/* --- PANTALLA DE PERFIL OCULTA --- */}
-      {/* (La necesitamos para que la navegación desde el avatar funcione) */}
       <Drawer.Screen 
         name="Perfil" 
         component={Perfil} 
         options={{
-          drawerItemStyle: { display: 'none' } // Oculta del menú
+          drawerItemStyle: { display: 'none' }
         }}
       />
 
     </Drawer.Navigator>
   );
 }
-
-// --- NUEVO: Estilos para el Placeholder ---
 const styles = StyleSheet.create({
   placeholderContainer: {
     flex: 1,
