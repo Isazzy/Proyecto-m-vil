@@ -1,19 +1,13 @@
 import React from 'react';
-// --- CAMBIO: Añadimos View, Text, StyleSheet ---
 import { View, Text, StyleSheet } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-
-// Importa el diseño del Drawer
 import CustomDrawer from './CustomDrawer';
-
-// Importa las pantallas (o Stacks)
 import Home from '../screens/Home';
 import ProductosStack from './ProductosStack';
-import Perfil from '../screens/Perfil'; // Importamos Perfil
+import Perfil from '../screens/Perfil';
 import Productos from './Productos';
 
-// --- PALETA DE COLORES (copiada de CustomDrawer) ---
 const COLORES = {
   fondo: '#000000',
   superficie: '#190101',

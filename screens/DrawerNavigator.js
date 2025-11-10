@@ -1,4 +1,3 @@
-// navigation/DrawerNavigator.js
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
@@ -20,11 +19,11 @@ function CustomDrawerContent({ navigation }) {
   const menuItems = [
     { label: 'Inicio', icon: 'home-outline', screen: 'Home' },
     { label: 'Perfil', icon: 'person-outline', screen: 'Perfil' },
-    { label: 'Agenda', icon: 'calendar-outline', screen: 'Agenda' },
-    { label: 'Clientes', icon: 'people-outline', screen: 'Clientes' },
-    { label: 'Servicios', icon: 'cut-outline', screen: 'Servicios' },
-    { label: 'Proveedores', icon: 'briefcase-outline', screen: 'Proveedores' },
-    { label: 'Compras', icon: 'cart-outline', screen: 'Compras' },
+    { label: 'Agenda', icon: 'calendar-outline', screen: 'Ageda' },
+    { label: 'Clientes', icon: 'people-outline', screen: 'Clietes' },
+    { label: 'Servicios', icon: 'cut-outline', screen: 'Serviios' },
+    { label: 'Proveedores', icon: 'briefcase-outline', screen: 'Provedores' },
+    { label: 'Compras', icon: 'cart-outline', screen: 'Compas' },
   ];
 
   return (

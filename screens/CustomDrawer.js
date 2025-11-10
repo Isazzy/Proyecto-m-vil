@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../src/config/firebaseConfig';
 import { signOut } from 'firebase/auth';
-import { LinearGradient } from 'expo-linear-gradient'; // <-- para degradado
+import { LinearGradient } from 'expo-linear-gradient';
 
 const COLORES = {
   fondo: '#000000',
